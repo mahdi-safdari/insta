@@ -2,11 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:instagram/data_Provider.dart';
 
 import 'package:instagram/main_wrapper.dart';
+import 'package:instagram/providers/story_number_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const MyApp());
+  final prefs = await SharedPreferences.getInstance();
+  runApp(
+    ChangeNotifierProvider(
+      create: (BuildContext context) {
+        return StoryNumberProvider(prefs)..loadNumber();
+      },
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatefulWidget {

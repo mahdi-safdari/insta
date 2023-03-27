@@ -3,9 +3,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:instagram/over_view.dart';
+import 'package:instagram/providers/story_number_provider.dart';
 import 'package:instagram/story_page.dart';
 import 'package:instagram/user_view.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ViewStory extends StatefulWidget {
@@ -49,6 +51,7 @@ class _ViewStoryState extends State<ViewStory> {
   @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
+    final storyNumber = Provider.of<StoryNumberProvider>(context);
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -76,7 +79,7 @@ class _ViewStoryState extends State<ViewStory> {
             child: SizedBox(
               height: 140,
               child: PageView.builder(
-                itemCount: widget.length,
+                itemCount: storyNumber.number,
                 scrollDirection: Axis.horizontal,
                 controller: controller1,
                 itemBuilder: (context, position) {
@@ -120,10 +123,9 @@ class _ViewStoryState extends State<ViewStory> {
                                     ),
                                   ),
                                 )
-                              : null,
-                          // Container(
-                          //     color: Colors.greenAccent,
-                          //   ),
+                              : Container(
+                                  color: Colors.greenAccent,
+                                ),
                         ),
                       ),
                     ),

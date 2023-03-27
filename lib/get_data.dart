@@ -4,7 +4,9 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:instagram/data_Provider.dart';
+import 'package:instagram/providers/story_number_provider.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class GetData extends StatefulWidget {
@@ -130,6 +132,7 @@ class _GetDataState extends State<GetData> {
   final GlobalKey<FormState> _globalKey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
+    final storyNumber = Provider.of<StoryNumberProvider>(context, listen: false);
     return Scaffold(
       appBar: AppBar(),
       backgroundColor: Colors.grey[200],
@@ -164,7 +167,7 @@ class _GetDataState extends State<GetData> {
                             },
                             controller: storyCountController,
                             decoration: InputDecoration(
-                              counterText: MyData.storyCount.toString(),
+                              counterText: storyNumber.number.toString(),
                               hintText: 'تعداد استوری',
                             ),
                           ),
@@ -173,6 +176,7 @@ class _GetDataState extends State<GetData> {
                           onPressed: () {
                             if (_globalKey.currentState!.validate()) {
                               setState(() {
+                                storyNumber.number = int.parse(storyCountController.text);
                                 if (MyData.storyCount != null && storyCountController.text.isNotEmpty) {
                                   MyData.storyCount = int.parse(storyCountController.text);
                                 }
