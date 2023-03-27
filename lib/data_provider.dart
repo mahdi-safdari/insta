@@ -1,0 +1,31 @@
+class MyData {
+  static String? userName;
+  static String? profileName;
+  static String? numberPost;
+  static String? profileFollower;
+  static String? profileFollowing;
+  static String? bio;
+  static String? view;
+  static String? reach;
+  static String? engaged;
+  static String? profileActivity;
+  static String? follower;
+  static String? nonFollower;
+  static String? impression;
+  static String? intraction;
+  static String? shares;
+  static String? replies;
+  static String? navigation;
+  static String? forward;
+  static String? exited;
+  static String? nextStory;
+  static String? back;
+  static String? profileVisit;
+  static String? follows;
+  static String? imageGrid;
+  static int? storyCount;
+
+  static List<String>? hilite;
+  static List<String>? post;
+  static List<String>? story;
+}
