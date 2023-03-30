@@ -1,14 +1,17 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:instagram/account_tab1.dart';
 import 'package:instagram/account_tab2.dart';
 import 'package:instagram/account_tab3.dart';
 import 'package:instagram/data_Provider.dart';
+import 'package:instagram/providers/avatar_provider.dart';
 import 'package:instagram/story_page.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
@@ -21,7 +24,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   final ImagePicker _picker = ImagePicker();
   List<XFile> imagesHilight = [];
-  XFile? profileImage;
   getHilightImage() async {
     List<XFile> listImages = await _picker.pickMultiImage();
 
@@ -57,39 +59,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin, Auto
     });
   }
 
-  getProfileImage() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-    if (image == null) return;
-
-    // Save the image file to local storage
-    final Directory tempDir = await getApplicationDocumentsDirectory();
-    final String fileName = '${DateTime.now().millisecondsSinceEpoch}.png';
-    final File localImage = await File('${tempDir.path}/$fileName').create();
-    final bytes = await image.readAsBytes();
-    await localImage.writeAsBytes(bytes);
-
-    // Save the path to the stored image file in SharedPreferences
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('image_path', localImage.path);
-
-    // Set the profileImage variable with the stored image path
-    setState(() {
-      final imagePath = prefs.getString('image_path');
-      if (imagePath != null && imagePath.isNotEmpty) {
-        profileImage = XFile(imagePath);
-      }
-    });
-  }
-
   getData() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       MyData.userName = prefs.getString('userName') ?? 'userName';
-      final imagePath = prefs.getString('image_path');
-      if (imagePath != null && imagePath.isNotEmpty) {
-        profileImage = XFile(imagePath);
-      }
-      //! The images Hilight
+
+      // //! The images Hilight
       final imagePaths = prefs.getStringList('image_paths');
       if (imagePaths != null && imagePaths.isNotEmpty) {
         for (final imagePath in imagePaths) {
@@ -108,7 +83,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin, Auto
   @override
   Widget build(BuildContext context) {
     super.build(context);
-
+    final avatar = Provider.of<AvatarProvider>(context);
+    final Size size = MediaQuery.of(context).size;
     return DefaultTabController(
       length: 3,
       child: Scaffold(
@@ -121,32 +97,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin, Auto
               //! user name
               Text(MyData.userName ?? 'userName', style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
               const SizedBox(width: 7),
-              const RotatedBox(
-                quarterTurns: 3,
-                child: Icon(Icons.arrow_back_ios, size: 15, color: Colors.black),
-              ),
-              const SizedBox(width: 7),
-              Container(
-                width: 8,
-                height: 8,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.red,
-                ),
-              )
+              SvgPicture.asset('assets/image/angle-small-down.svg'),
+              Container(width: 8, height: 8, decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.red)),
             ],
           ),
-          actions: const [
-            Icon(
-              Icons.add_box_outlined,
-              color: Colors.black,
-            ),
-            SizedBox(width: 20),
-            Icon(
-              Icons.menu,
-              color: Colors.black,
-            ),
-            SizedBox(width: 20),
+          actions: [
+            SizedBox(width: 20, height: 20, child: Image.asset('assets/image/add.png')),
+            const SizedBox(width: 20),
+            SizedBox(width: 20, height: 20, child: SvgPicture.asset('assets/image/menu-burger.svg')),
+            const SizedBox(width: 20),
           ],
         ),
         body: SingleChildScrollView(
@@ -163,22 +122,23 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin, Auto
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      //! Avatar
                       GestureDetector(
                         onLongPress: () {
-                          getProfileImage();
+                          avatar.getProfileImage();
                         },
                         onTap: () {
                           Navigator.push(
                             context,
                             PageTransition(
-                              child: const StoryPage(),
+                              child: const StoryPage(initialStoryIndex: 0),
                               type: PageTransitionType.scale,
                               alignment: const Alignment(-0.75, -0.70),
                               duration: const Duration(milliseconds: 500),
                             ),
                           );
                         },
-                        child: profileImage == null || profileImage!.path.isEmpty
+                        child: avatar.profileImage == null || avatar.profileImage!.path.isEmpty
                             ? Container(
                                 width: 80,
                                 height: 80,
@@ -195,7 +155,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin, Auto
                                 width: 80,
                                 height: 80,
                                 decoration: BoxDecoration(
-                                  image: DecorationImage(fit: BoxFit.cover, image: FileImage(File(profileImage!.path))),
+                                  image: DecorationImage(fit: BoxFit.cover, image: FileImage(File(avatar.profileImage!.path))),
                                   shape: BoxShape.circle,
                                   color: Colors.cyan,
                                   boxShadow: [
@@ -217,8 +177,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin, Auto
                                   MyData.numberPost ?? '200',
                                   style: const TextStyle(
                                     color: Colors.black,
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.w800,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w700,
                                   ),
                                 ),
                                 const SizedBox(height: 3),
@@ -236,8 +196,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin, Auto
                                   MyData.profileFollower ?? '400K',
                                   style: const TextStyle(
                                     color: Colors.black,
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.w800,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w700,
                                   ),
                                 ),
                                 const SizedBox(height: 3),
@@ -255,8 +215,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin, Auto
                                   MyData.profileFollowing ?? '360K',
                                   style: const TextStyle(
                                     color: Colors.black,
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.w800,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w700,
                                   ),
                                 ),
                                 const SizedBox(height: 3),
@@ -308,13 +268,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin, Auto
                 Padding(
                   padding: const EdgeInsets.only(left: 15, right: 15, top: 14),
                   child: Container(
-                    height: 62,
+                    height: size.height * 0.08,
                     decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(10)),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Padding(
-                          padding: const EdgeInsets.all(16.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                           child: Column(
                             children: const [
                               Text(
@@ -387,17 +347,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin, Auto
                 //! Hilight
                 hilight(),
                 //! Tab Bar
-                const TabBar(
+                TabBar(
                   unselectedLabelColor: Colors.grey,
                   tabs: [
                     Tab(
-                      icon: Icon(Icons.grid_on_sharp, color: Colors.black),
+                      icon: SizedBox(width: 20, height: 20, child: SvgPicture.asset('assets/image/grid.svg')),
                     ),
                     Tab(
-                      icon: Icon(Icons.movie_creation_outlined, color: Colors.black),
+                      icon: SizedBox(width: 20, height: 20, child: Image.asset('assets/image/video.png')),
                     ),
                     Tab(
-                      icon: Icon(Icons.person_pin_outlined, color: Colors.black),
+                      icon: SizedBox(width: 20, height: 20, child: SvgPicture.asset('assets/image/portrait.svg')),
                     ),
                   ],
                 ),

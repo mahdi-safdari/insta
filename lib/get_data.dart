@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:instagram/data_Provider.dart';
+import 'package:instagram/providers/slider_provider.dart';
 import 'package:instagram/providers/story_number_provider.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
@@ -41,6 +42,7 @@ class _GetDataState extends State<GetData> {
   TextEditingController profileVisitController = TextEditingController();
   TextEditingController followsController = TextEditingController();
   TextEditingController storyCountController = TextEditingController();
+  TextEditingController gridController = TextEditingController();
 
   Future<void> saveData({String? key, String? value, int? count}) async {
     final prefs = await SharedPreferences.getInstance();
@@ -65,8 +67,6 @@ class _GetDataState extends State<GetData> {
       MyData.reach = prefs.getString('reach') ?? '200';
       MyData.engaged = prefs.getString('engaged') ?? '--';
       MyData.profileActivity = prefs.getString('profileActivity') ?? '0';
-      // MyData.follower = prefs.getString('profileActivity') ?? '0';
-      // MyData.nonFollower = prefs.getString('profileActivity') ?? '0';
       MyData.impression = prefs.getString('impression') ?? '9';
       MyData.intraction = prefs.getString('intraction') ?? '19';
       MyData.shares = prefs.getString('shares') ?? '36';
@@ -78,7 +78,7 @@ class _GetDataState extends State<GetData> {
       MyData.back = prefs.getString('back') ?? '2';
       MyData.profileVisit = prefs.getString('profileVisit') ?? '19';
       MyData.follows = prefs.getString('profileActivity') ?? '39';
-      MyData.storyCount = prefs.getInt('storyCount') ?? 10;
+      MyData.storyCount = prefs.getInt('storyCount') ?? 1;
     });
   }
 
@@ -133,6 +133,9 @@ class _GetDataState extends State<GetData> {
   @override
   Widget build(BuildContext context) {
     final storyNumber = Provider.of<StoryNumberProvider>(context, listen: false);
+    final slider = Provider.of<SliderProvider>(context, listen: false);
+    final grid = Provider.of<StoryNumberProvider>(context, listen: false);
+
     return Scaffold(
       appBar: AppBar(),
       backgroundColor: Colors.grey[200],
@@ -318,7 +321,7 @@ class _GetDataState extends State<GetData> {
                 ),
               ),
               Container(
-                height: 700,
+                height: 1000,
                 margin: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -547,6 +550,58 @@ class _GetDataState extends State<GetData> {
                         ),
                       ],
                     ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        textField(
+                          width: 150,
+                          keyboardType: TextInputType.number,
+                          controller: followerController,
+                          counterText: slider.follower.toString(),
+                          hintText: 'follower chart',
+                          onChanged: (String text) {
+                            setState(() {
+                              if (text.isNotEmpty) {
+                                slider.follower = int.parse(text);
+                              }
+                            });
+                          },
+                        ),
+                        textField(
+                          width: 150,
+                          keyboardType: TextInputType.number,
+                          controller: nonFollowerController,
+                          counterText: slider.nonFollower.toString(),
+                          hintText: 'non follower chart',
+                          onChanged: (String text) {
+                            setState(() {
+                              if (text.isNotEmpty) {
+                                slider.nonFollower = int.parse(text);
+                              }
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        textField(
+                          width: 150,
+                          keyboardType: TextInputType.number,
+                          controller: gridController,
+                          counterText: grid.grid.toString(),
+                          hintText: 'post number',
+                          onChanged: (String text) {
+                            setState(() {
+                              if (text.isNotEmpty) {
+                                grid.grid = int.parse(text);
+                              }
+                            });
+                          },
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -563,10 +618,12 @@ class _GetDataState extends State<GetData> {
     required String? hintText,
     required Function(String)? onChanged,
     required double? width,
+    TextInputType? keyboardType,
   }) {
     return SizedBox(
       width: width,
       child: TextField(
+        keyboardType: keyboardType,
         controller: controller,
         style: const TextStyle(fontSize: 16),
         decoration: InputDecoration(

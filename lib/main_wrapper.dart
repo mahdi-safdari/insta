@@ -1,8 +1,13 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:instagram/data_provider.dart';
 import 'package:instagram/get_data.dart';
 import 'package:instagram/home_page.dart';
 import 'package:instagram/icon/uicons.dart';
+import 'package:instagram/providers/avatar_provider.dart';
+import 'package:provider/provider.dart';
 
 class MainWrapper extends StatefulWidget {
   const MainWrapper({super.key});
@@ -30,31 +35,58 @@ class _MainWrapperState extends State<MainWrapper> {
 
   @override
   Widget build(BuildContext context) {
+    final avatar = Provider.of<AvatarProvider>(context);
+
     return Scaffold(
       body: Center(
         child: _widgetOptions.elementAt(_selectedIndex),
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        items: const [
+        items: [
           BottomNavigationBarItem(
-            icon: Icon(Uicons.fiRrHome),
+            icon: SizedBox(width: 20, height: 20, child: Image.asset('assets/image/hut.png')),
+            label: '',
+          ),
+          const BottomNavigationBarItem(
+            icon: Icon(Uicons.fiRrSearch, color: Colors.black, size: 30),
             label: '',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Uicons.fiRrSearch),
+            icon: SizedBox(width: 20, height: 20, child: Image.asset('assets/image/add.png')),
             label: '',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Uicons.fiRrSquare),
+            icon: SizedBox(width: 20, height: 20, child: Image.asset('assets/image/video.png')),
             label: '',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Uicons.fiRrPlayAlt),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
+            icon: avatar.profileImage == null || avatar.profileImage!.path.isEmpty
+                ? Container(
+                    width: 30,
+                    height: 30,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.cyan,
+                      boxShadow: [
+                        BoxShadow(color: Colors.grey.shade400, blurRadius: 1, spreadRadius: 0.5),
+                      ],
+                      border: Border.all(color: Colors.white, width: 1.5),
+                    ),
+                  )
+                : Container(
+                    width: 30,
+                    height: 30,
+                    decoration: BoxDecoration(
+                      image: DecorationImage(fit: BoxFit.cover, image: FileImage(File(avatar.profileImage!.path))),
+                      shape: BoxShape.circle,
+                      color: Colors.cyan,
+                      boxShadow: [
+                        BoxShadow(color: Colors.grey.shade400, blurRadius: 1, spreadRadius: 0.5),
+                      ],
+                      border: Border.all(color: Colors.white, width: 1.5),
+                    ),
+                  ),
             label: '',
           ),
         ],

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:instagram/data_Provider.dart';
 
 import 'package:instagram/main_wrapper.dart';
+import 'package:instagram/providers/avatar_provider.dart';
+import 'package:instagram/providers/slider_provider.dart';
 import 'package:instagram/providers/story_number_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,10 +12,12 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
   runApp(
-    ChangeNotifierProvider(
-      create: (BuildContext context) {
-        return StoryNumberProvider(prefs)..loadNumber();
-      },
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider<StoryNumberProvider>(create: (context) => StoryNumberProvider(prefs)..loadNumber()),
+        ChangeNotifierProvider<AvatarProvider>(create: (context) => AvatarProvider(prefs)..loadAvatar()),
+        ChangeNotifierProvider<SliderProvider>(create: (context) => SliderProvider(prefs)..loadSliderNumber()),
+      ],
       child: const MyApp(),
     ),
   );

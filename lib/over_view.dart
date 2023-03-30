@@ -1,5 +1,10 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:instagram/data_provider.dart';
+import 'package:instagram/providers/slider_provider.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
@@ -24,8 +29,6 @@ class _OverViewState extends State<OverView> {
       MyData.reach = prefs.getString('reach') ?? '200';
       MyData.engaged = prefs.getString('engaged') ?? '--';
       MyData.profileActivity = prefs.getString('profileActivity') ?? '0';
-      // MyData.follower = prefs.getString('profileActivity') ?? '0';
-      // MyData.nonFollower = prefs.getString('profileActivity') ?? '0';
       MyData.impression = prefs.getString('impression') ?? '9';
       MyData.intraction = prefs.getString('intraction') ?? '19';
       MyData.shares = prefs.getString('shares') ?? '36';
@@ -45,16 +48,24 @@ class _OverViewState extends State<OverView> {
   @override
   void initState() {
     getData();
-    data = [
-      _ChartData('David', 5),
-      _ChartData('Steve', 38),
-    ];
-    _tooltip = TooltipBehavior(enable: true);
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    final slider = Provider.of<SliderProvider>(context);
+    var n = slider.follower - slider.nonFollower;
+    var space = n / pi * 0.08;
+
+    data = [
+      _ChartData('A', space.toDouble()),
+      _ChartData('Steve', slider.nonFollower.toDouble()),
+      _ChartData('B', space.toDouble()),
+      _ChartData('David', slider.follower.toDouble()),
+    ];
+    _tooltip = TooltipBehavior(enable: true);
+    final formatter = NumberFormat('#,###');
+
     return SingleChildScrollView(
       child: Column(
         children: [
@@ -136,12 +147,13 @@ class _OverViewState extends State<OverView> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
+                      //! Follower chart
                       Column(
                         mainAxisAlignment: MainAxisAlignment.end,
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(
-                            data[1].y.toStringAsFixed(0),
+                            formatter.format(slider.follower),
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           Row(
@@ -176,10 +188,12 @@ class _OverViewState extends State<OverView> {
                             DoughnutSeries<_ChartData, String>(
                               strokeWidth: 10,
                               pointColorMapper: (_ChartData datum, int index) {
-                                if (index == 0) {
+                                if (index == 1) {
                                   return Colors.blue[900];
+                                } else if (index == 3) {
+                                  return Colors.blue;
                                 }
-                                return Colors.blue;
+                                return Colors.white;
                               },
                               dataSource: data,
                               xValueMapper: (_ChartData data, _) => data.x,
@@ -190,12 +204,13 @@ class _OverViewState extends State<OverView> {
                           ],
                         ),
                       ),
+                      //! non Follower chart
                       Column(
                         mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            data[0].y.toStringAsFixed(0),
+                            formatter.format(slider.nonFollower),
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           Row(

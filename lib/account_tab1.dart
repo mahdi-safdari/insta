@@ -2,7 +2,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:instagram/data_provider.dart';
+import 'package:instagram/providers/story_number_provider.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path/path.dart' as path;
 
@@ -23,7 +25,7 @@ class _AccountTab1State extends State<AccountTab1> {
   getData() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      for (var i = 0; i < 5; i++) {
+      for (var i = 0; i < 500; i++) {
         final key = 'image_path_$i';
         if (prefs.containsKey(key)) {
           listLocalImages[i] = File(prefs.getString(key)!);
@@ -32,7 +34,7 @@ class _AccountTab1State extends State<AccountTab1> {
     });
   }
 
-  final List<File?> listLocalImages = List.generate(5, (_) => null);
+  final List<File?> listLocalImages = List.generate(500, (_) => null);
   final ImagePicker _picker = ImagePicker();
 
   getImagePost(int index) async {
@@ -61,9 +63,10 @@ class _AccountTab1State extends State<AccountTab1> {
 
   @override
   Widget build(BuildContext context) {
+    final grid = Provider.of<StoryNumberProvider>(context);
     return GridView.builder(
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: 5,
+      itemCount: grid.grid,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3),
       itemBuilder: (BuildContext context, int index) {
         return Padding(

@@ -1,14 +1,32 @@
-import 'package:flutter/material.dart';
+import 'dart:math';
 
-class UserView extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+
+class UserView extends StatefulWidget {
   const UserView({super.key});
+
+  @override
+  State<UserView> createState() => _UserViewState();
+}
+
+class _UserViewState extends State<UserView> {
+  late List<String> images;
+  @override
+  void initState() {
+    final List<String> images1 = List.generate(99, (index) => 'https://randomuser.me/api/portraits/${RandomImage.gender[Random().nextInt(2)]}/$index.jpg');
+    final List<String> images2 = List.generate(99, (index) => 'https://picsum.photos/id/${Random().nextInt(1080)}/1080/1080');
+    images = [...images1, ...images2];
+    images.shuffle(Random());
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
       color: Colors.white,
       child: ListView.builder(
-        itemCount: 20,
+        itemCount: 100,
         itemBuilder: (context, index) {
           if (index == 0) {
             return Column(
@@ -18,19 +36,24 @@ class UserView extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(top: 5),
                   child: ListTile(
-                    leading: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.grey.withOpacity(0.4),
+                    leading: Stack(
+                      children: [
+                        Container(
+                          width: 42,
+                          height: 42,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.grey.withOpacity(0.4),
+                            ),
+                          ),
                         ),
-                      ),
-                      child: const Icon(
-                        Icons.published_with_changes,
-                        color: Colors.black,
-                      ),
+                        Positioned(
+                          top: 10,
+                          left: 10,
+                          child: SizedBox(height: 22, width: 22, child: SvgPicture.asset('assets/image/trending-up.svg')),
+                        ),
+                      ],
                     ),
                     title: const Text(
                       'Boost this story',
@@ -61,46 +84,51 @@ class UserView extends StatelessWidget {
           return Padding(
             padding: const EdgeInsets.only(left: 16, top: 16),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 16),
-                  child: Container(
-                    width: 50,
-                    height: 50,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      image: DecorationImage(
-                        fit: BoxFit.cover,
-                        image: AssetImage('assets/image/1.jpg'),
+                Row(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(right: 16),
+                      child: Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          image: DecorationImage(
+                            fit: BoxFit.cover,
+                            image: NetworkImage('https://randomuser.me/api/portraits/${RandomImage.gender[Random().nextInt(2)]}/${Random().nextInt(100)}.jpg'),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text(
-                      'hamidmoghim1',
-                      style: TextStyle(
-                        fontSize: 15.0,
-                      ),
-                    ),
-                    Text(
-                      'hamidmoghim1',
-                      style: TextStyle(
-                        fontSize: 15.0,
-                        color: Colors.grey,
-                      ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          RandomUserName.usernames[Random().nextInt(90)],
+                          style: const TextStyle(
+                            fontSize: 15.0,
+                          ),
+                        ),
+                        Text(
+                          RandomUserName.names[Random().nextInt(90)],
+                          style: const TextStyle(
+                            fontSize: 15.0,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-                const SizedBox(width: 130),
-                Expanded(
+                Padding(
+                  padding: const EdgeInsets.only(right: 20),
                   child: Row(
-                    children: const [
-                      Icon(Icons.more_vert_rounded),
-                      SizedBox(width: 20),
-                      Icon(Icons.send),
+                    children: [
+                      const Icon(Icons.more_vert_rounded),
+                      const SizedBox(width: 25),
+                      SizedBox(height: 22, width: 22, child: SvgPicture.asset('assets/image/send.svg')),
                     ],
                   ),
                 ),
@@ -111,4 +139,13 @@ class UserView extends StatelessWidget {
       ),
     );
   }
+}
+
+class RandomImage {
+  static const List<String> gender = ['men', 'women'];
+}
+
+class RandomUserName {
+  static const List<String> usernames = ["bluesky", "jazzman", "sunsetlover", "greeneyes", "rockstar", "beachbum", "happycamper", "pizzalover", "coffeeaddict", "bookworm", "gardener", "fitnessfan", "doglover", "catperson", "artist", "writer", "baker", "cheflife", "yogagirl", "surfergirl", "skaterboy", "snowboarder", "partyanimal", "sunflower", "butterfly", "dragonfly", "firefly", "thunderstorm", "rainydays", "sunnydayz", "moonchild", "stargazer", "nightowl", "earlybird", "citylights", "countrygirl", "islandlife", "mountaingirl", "roadtripper", "travelbug", "wanderlust", "adventureseeker", "freedomfighter", "changemaker", "activist", "feminist", "goddess", "warrior", "queenbee", "kingoftheworld", "bossbabe", "entrepreneur", "startuplife", "techie", "nerdalert", "geekgirl", "gamergirl", "booknerd", "movielover", "musicaddict", "popculture", "hipster", "trendsetter", "fashionista", "makeupjunkie", "beautyqueen", "fitnessmodel", "healthyliving", "organicfoodie", "plantbased", "veganlife", "spiritualgangster", "meditation", "mindfulness", "positivevibes", "goodenergy", "kindnessmatters", "gratitudeattitude", "lovelanguages", "relationshipgoals", "familytime", "momlife", "dadsofinstagram", "petsofinstagram", "friendsforever", "bffs", "squadgoals", "teamwork", "nevergiveup", "believeinyourself", "dreambig", "hustlehard", "workinprogress"];
+  static const List<String> names = ["Oliver", "Emma", "Liam", "Ava", "Noah", "Sophia", "Ethan", "Isabella", "Lucas", "Mia", "Mason", "Charlotte", "Jacob", "Amelia", "Michael", "Harper", "Benjamin", "Evelyn", "William", "Abigail", "Daniel", "Emily", "Matthew", "Elizabeth", "Joseph", "Sofia", "David", "Madison", "Aiden", "Chloe", "James", "Ella", "Elijah", "Grace", "Samuel", "Victoria", "Alexander", "Scarlett", "Isaac", "Avery", "Joshua", "Lily", "Connor", "Hannah", "Eli", "Natalie", "Levi", "Addison", "Nathan", "Aria", "Caleb", "Zoe", "Hunter", "Penelope", "Christian", "Riley", "Grayson", "Savannah", "Sebastian", "Audrey", "Gabriel", "Ellie", "Owen", "Violet", "Luke", "Stella", "Cameron", "Brooklyn", "Landon", "Claire", "Adrian", "Aaliyah", "Logan", "Skylar", "Evelyn", "Bella", "Lincoln", "Lucy", "Nicholas", "Paisley", "Jaxon", "Mila", "Asher", "Genesis", "Hudson", "Naomi", "Jeremiah", "Aurora", "Mateo", "Liliana", "Easton", "Melanie", "Ryan", "Valentina", "Nolan", "Delilah", "Colton", "Isabelle"];
 }
