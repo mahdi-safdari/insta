@@ -3,7 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:instagram/data_provider.dart';
+import 'package:instagram/my_data.dart';
 import 'package:instagram/providers/avatar_provider.dart';
 import 'package:instagram/providers/story_number_provider.dart';
 import 'package:instagram/user_view.dart';
@@ -49,28 +49,34 @@ class _StoryPageState extends State<StoryPage> {
     super.initState();
   }
 
+  int storyIndex = 0;
   @override
   Widget build(BuildContext context) {
     final avatar = Provider.of<AvatarProvider>(context);
     final storyCount = Provider.of<StoryNumberProvider>(context);
-    return Hero(
-      tag: 'story',
-      child: Scaffold(
-        body: Stack(
-          children: [
-            StoryPageView(
-              initialStoryIndex: (pageIndex) {
-                return widget.initialStoryIndex;
-              },
-              backgroundColor: Colors.black,
-              indicatorHeight: 1.5,
-              indicatorDuration: const Duration(seconds: 15),
-              indicatorPadding: const EdgeInsets.symmetric(vertical: 32, horizontal: 8),
-              itemBuilder: (context, pageIndex, storyIndex) {
-                return Stack(
-                  children: [
-                    //! Background
-                    Container(
+    return Scaffold(
+      body: Stack(
+        children: [
+          StoryPageView(
+            initialStoryIndex: (pageIndex) {
+              return widget.initialStoryIndex;
+            },
+            backgroundColor: Colors.black,
+            indicatorHeight: 1.5,
+            indicatorDuration: const Duration(seconds: 15),
+            indicatorPadding: const EdgeInsets.symmetric(vertical: 32, horizontal: 8),
+            onPageChanged: (int index) {
+              setState(() {
+                storyIndex = index;
+              });
+            },
+            itemBuilder: (context, pageIndex, storyIndex) {
+              return Stack(
+                children: [
+                  //! Background
+                  Hero(
+                    tag: storyIndex,
+                    child: Container(
                       decoration: BoxDecoration(
                         image: listLocalImageStory[storyIndex] != null
                             ? DecorationImage(
@@ -85,180 +91,201 @@ class _StoryPageState extends State<StoryPage> {
                               ),
                       ),
                     ),
-                    //! Name & Avatar
-                    Padding(
-                      padding: const EdgeInsets.only(top: 44, left: 8),
-                      child: Row(
-                        children: [
-                          avatar.profileImage == null || avatar.profileImage!.path.isEmpty
-                              ? Container(
-                                  height: 32,
-                                  width: 32,
-                                  decoration: const BoxDecoration(
-                                    color: Colors.pink,
-                                    shape: BoxShape.circle,
-                                  ),
-                                )
-                              : Container(
-                                  height: 32,
-                                  width: 32,
-                                  decoration: BoxDecoration(
-                                    image: DecorationImage(
-                                      image: FileImage(File(avatar.profileImage!.path)),
-                                      fit: BoxFit.cover,
-                                    ),
-                                    shape: BoxShape.circle,
-                                  ),
+                  ),
+                  //! Name & Avatar
+                  Padding(
+                    padding: const EdgeInsets.only(top: 44, left: 8),
+                    child: Row(
+                      children: [
+                        avatar.profileImage == null || avatar.profileImage!.path.isEmpty
+                            ? Container(
+                                height: 32,
+                                width: 32,
+                                decoration: const BoxDecoration(
+                                  color: Colors.pink,
+                                  shape: BoxShape.circle,
                                 ),
-                          const SizedBox(width: 8),
-                          Text(
-                            MyData.userName ?? "userName",
-                            style: const TextStyle(
-                              fontSize: 15,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w500,
-                            ),
+                              )
+                            : Container(
+                                height: 32,
+                                width: 32,
+                                decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                    image: FileImage(File(avatar.profileImage!.path)),
+                                    fit: BoxFit.cover,
+                                  ),
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                        const SizedBox(width: 8),
+                        Text(
+                          MyData.userName ?? "userName",
+                          style: const TextStyle(
+                            fontSize: 15,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                            shadows: [
+                              Shadow(
+                                color: Colors.black,
+                                blurRadius: 2,
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 8),
-                          const Text(
-                            '47m',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey,
-                            ),
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          '47m',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  ],
-                );
-              },
-              storyLength: (int pageIndex) {
-                return storyCount.number;
-              },
-              pageLength: 1,
-            ),
-            Positioned(
-              bottom: 0,
-              child: Container(
-                height: 70,
-                width: MediaQuery.of(context).size.width,
-                color: Colors.black,
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Stack(
-                        children: [
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => ViewStory(length: listLocalImageStory.length)),
-                              );
-                            },
-                            child: Stack(children: [
-                              Positioned(
-                                left: 20,
-                                top: 10,
-                                child: Container(
-                                  width: 30,
-                                  height: 30,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(color: Colors.black87, width: 2),
-                                    image: DecorationImage(
-                                      image: NetworkImage('https://randomuser.me/api/portraits/${RandomImage.gender[Random().nextInt(2)]}/${Random().nextInt(100)}.jpg'),
-                                      fit: BoxFit.cover,
-                                    ),
+                  ),
+                ],
+              );
+            },
+            storyLength: (int pageIndex) {
+              return storyCount.number;
+            },
+            pageLength: 1,
+          ),
+          Positioned(
+            bottom: 0,
+            child: Container(
+              height: 70,
+              width: MediaQuery.of(context).size.width,
+              color: Colors.black,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Stack(
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => ViewStory(storyIndex: storyIndex, length: listLocalImageStory.length)),
+                            );
+                          },
+                          child: Stack(children: [
+                            Positioned(
+                              left: 20,
+                              top: 10,
+                              child: Container(
+                                width: 30,
+                                height: 30,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: Colors.black87, width: 2),
+                                  image: DecorationImage(
+                                    image: NetworkImage('https://randomuser.me/api/portraits/${RandomImage.gender[Random().nextInt(2)]}/${Random().nextInt(100)}.jpg'),
+                                    fit: BoxFit.cover,
                                   ),
                                 ),
                               ),
-                              Positioned(
-                                left: 40,
-                                top: 10,
-                                child: Container(
-                                  width: 30,
-                                  height: 30,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(color: Colors.black87, width: 2),
-                                    image: DecorationImage(
-                                      image: NetworkImage('https://randomuser.me/api/portraits/${RandomImage.gender[Random().nextInt(2)]}/${Random().nextInt(100)}.jpg'),
-                                      fit: BoxFit.cover,
-                                    ),
+                            ),
+                            Positioned(
+                              left: 40,
+                              top: 10,
+                              child: Container(
+                                width: 30,
+                                height: 30,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: Colors.black87, width: 2),
+                                  image: DecorationImage(
+                                    image: NetworkImage('https://randomuser.me/api/portraits/${RandomImage.gender[Random().nextInt(2)]}/${Random().nextInt(100)}.jpg'),
+                                    fit: BoxFit.cover,
                                   ),
                                 ),
                               ),
-                              Positioned(
-                                left: 60,
-                                top: 10,
-                                child: Container(
-                                  width: 30,
-                                  height: 30,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(color: Colors.black87, width: 2),
-                                    image: DecorationImage(
-                                      image: NetworkImage('https://randomuser.me/api/portraits/${RandomImage.gender[Random().nextInt(2)]}/${Random().nextInt(100)}.jpg'),
-                                      fit: BoxFit.cover,
-                                    ),
+                            ),
+                            Positioned(
+                              left: 60,
+                              top: 10,
+                              child: Container(
+                                width: 30,
+                                height: 30,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: Colors.black87, width: 2),
+                                  image: DecorationImage(
+                                    image: NetworkImage('https://randomuser.me/api/portraits/${RandomImage.gender[Random().nextInt(2)]}/${Random().nextInt(100)}.jpg'),
+                                    fit: BoxFit.cover,
                                   ),
                                 ),
                               ),
-                              const Positioned(
-                                top: 47,
-                                left: 37,
-                                child: Text(
-                                  'Activity',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12,
-                                  ),
+                            ),
+                            const Positioned(
+                              top: 47,
+                              left: 37,
+                              child: Text(
+                                'Activity',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
                                 ),
                               ),
-                            ]),
-                          ),
-                          Positioned(
-                            top: 10,
-                            left: 180,
-                            child: IconStory(
-                              icon: SvgPicture.asset('assets/image/play-alt.svg', color: Colors.white),
-                              title: 'Create',
                             ),
+                          ]),
+                        ),
+                        Positioned(
+                          top: 10,
+                          left: 180,
+                          child: IconStory(
+                            icon: SvgPicture.asset('assets/svg/reel.svg', color: Colors.white),
+                            title: 'Create',
                           ),
-                          Positioned(
-                            top: 10,
-                            left: 230,
-                            child: IconStory(
-                              icon: SvgPicture.asset('assets/image/share.svg', color: Colors.white),
-                              title: 'Share to...',
-                            ),
+                        ),
+                        Positioned(
+                          top: 10,
+                          left: 230,
+                          child: IconStory(
+                            icon: SvgPicture.asset('assets/image/share.svg', color: Colors.white),
+                            title: 'Share to...',
                           ),
-                          Positioned(
-                            top: 10,
-                            left: 290,
-                            child: IconStory(
-                              icon: SvgPicture.asset('assets/image/circle-heart.svg', color: Colors.white),
-                              title: 'Highlight',
-                            ),
+                        ),
+                        Positioned(
+                          top: 10,
+                          left: 290,
+                          child: Column(
+                            children: [
+                              Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  SvgPicture.asset('assets/svg/highlights.svg', width: 25, height: 25, color: Colors.white),
+                                  SvgPicture.asset('assets/svg/heart1.svg', width: 10, height: 10, color: Colors.white),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              const Text(
+                                'Highlight',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
                           ),
-                          const Positioned(
-                            top: 10,
-                            left: 350,
-                            child: IconStory(
-                              icon: Icon(Icons.more_vert_sharp, color: Colors.white),
-                              title: 'More',
-                            ),
+                        ),
+                        const Positioned(
+                          top: 10,
+                          left: 350,
+                          child: IconStory(
+                            icon: Icon(Icons.more_vert_sharp, color: Colors.white),
+                            title: 'More',
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -273,7 +300,7 @@ class IconStory extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        SizedBox(width: 20, height: 20, child: icon),
+        SizedBox(width: 25, height: 25, child: icon),
         const SizedBox(height: 10),
         Text(
           title,

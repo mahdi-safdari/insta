@@ -3,8 +3,11 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:instagram/data_Provider.dart';
+import 'package:instagram/my_data.dart';
+import 'package:instagram/providers/data_provider.dart';
 import 'package:instagram/providers/slider_provider.dart';
+import 'package:instagram/providers/story_data_provider.dart';
+import 'package:instagram/providers/story_images_provider.dart';
 import 'package:instagram/providers/story_number_provider.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
@@ -83,58 +86,62 @@ class _GetDataState extends State<GetData> {
   }
 
   //! --------------------------------------------------------------------------------------
-  Future<void> saveDataStory({required int index, required String imagePath}) async {
-    final prefs = await SharedPreferences.getInstance();
-    final key = 'image_story_$index';
-    prefs.setString(key, imagePath);
-  }
+  // Future<void> saveDataStory({required int index, required String imagePath}) async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   final key = 'image_story_$index';
+  //   prefs.setString(key, imagePath);
+  // }
 
-  final List<File?> listLocalImageStory = List.generate(1000, (_) => null);
-  final ImagePicker _picker = ImagePicker();
-  getImageStory(int index) async {
-    XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-    final Directory tempDir = await getApplicationDocumentsDirectory();
+  // final List<File?> listLocalImageStory = List.generate(1000, (_) => null);
+  // final ImagePicker _picker = ImagePicker();
+  // getImageStory(int index) async {
+  //   XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+  //   final Directory tempDir = await getApplicationDocumentsDirectory();
 
-    if (image != null && index >= 0) {
-      final String fileName = '${DateTime.now().millisecondsSinceEpoch}_${index * pi}.png';
-      final File localImage = await File('${tempDir.path}/$fileName').create();
-      final byteData = await image.readAsBytes();
-      final bytes = byteData.buffer.asUint8List();
-      await localImage.writeAsBytes(bytes);
+  //   if (image != null && index >= 0) {
+  //     final String fileName = '${DateTime.now().millisecondsSinceEpoch}_${index * pi}.png';
+  //     final File localImage = await File('${tempDir.path}/$fileName').create();
+  //     final byteData = await image.readAsBytes();
+  //     final bytes = byteData.buffer.asUint8List();
+  //     await localImage.writeAsBytes(bytes);
 
-      setState(() {
-        listLocalImageStory[index] = localImage;
-        saveDataStory(index: index, imagePath: localImage.path);
-      });
-    }
-  }
+  //     setState(() {
+  //       listLocalImageStory[index] = localImage;
+  //       saveDataStory(index: index, imagePath: localImage.path);
+  //     });
+  //   }
+  // }
 
-  getDataStory() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      for (var i = 0; i < 1000; i++) {
-        final key = 'image_story_$i';
-        if (prefs.containsKey(key)) {
-          listLocalImageStory[i] = File(prefs.getString(key)!);
-        }
-      }
-    });
-  }
+  // getDataStory() async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   setState(() {
+  //     for (var i = 0; i < 1000; i++) {
+  //       final key = 'image_story_$i';
+  //       if (prefs.containsKey(key)) {
+  //         listLocalImageStory[i] = File(prefs.getString(key)!);
+  //       }
+  //     }
+  //   });
+  // }
 
   //! --------------------------------------------------------------------------------------
   @override
   void initState() {
     getData();
-    getDataStory();
+    // getDataStory();
     super.initState();
   }
 
   final GlobalKey<FormState> _globalKey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
-    final storyNumber = Provider.of<StoryNumberProvider>(context, listen: false);
+    final Size size = MediaQuery.of(context).size;
+    final storyNumber = Provider.of<StoryNumberProvider>(context);
     final slider = Provider.of<SliderProvider>(context, listen: false);
     final grid = Provider.of<StoryNumberProvider>(context, listen: false);
+    final dataProvider = Provider.of<DataProvider>(context, listen: false);
+    final storyProvider = Provider.of<StoryImagesProvider>(context);
+    final data = Provider.of<StoryDataProvider>(context);
 
     return Scaffold(
       appBar: AppBar(),
@@ -145,88 +152,9 @@ class _GetDataState extends State<GetData> {
           key: _globalKey,
           child: Column(
             children: [
+              //! Profile
               Container(
-                width: MediaQuery.of(context).size.width,
-                margin: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        SizedBox(
-                          width: 150,
-                          child: TextFormField(
-                            keyboardType: TextInputType.number,
-                            validator: (String? value) {
-                              if (value!.isEmpty || value == null) {
-                                return 'باید یک عدد وارد کنی';
-                              }
-                              return null;
-                            },
-                            controller: storyCountController,
-                            decoration: InputDecoration(
-                              counterText: storyNumber.number.toString(),
-                              hintText: 'تعداد استوری',
-                            ),
-                          ),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            if (_globalKey.currentState!.validate()) {
-                              setState(() {
-                                storyNumber.number = int.parse(storyCountController.text);
-                                if (MyData.storyCount != null && storyCountController.text.isNotEmpty) {
-                                  MyData.storyCount = int.parse(storyCountController.text);
-                                }
-                                saveData(key: 'storyCount', count: int.parse(storyCountController.text));
-                              });
-                            }
-                          },
-                          child: const Text('بساز'),
-                        ),
-                      ],
-                    ),
-                    Flexible(
-                      fit: FlexFit.loose,
-                      child: SizedBox(
-                        height: 200,
-                        child: ListView.builder(
-                          physics: const BouncingScrollPhysics(),
-                          scrollDirection: Axis.horizontal,
-                          itemCount: MyData.storyCount ?? 1,
-                          itemBuilder: (context, index) {
-                            return GestureDetector(
-                              onTap: () {
-                                getImageStory(index);
-                              },
-                              child: Container(
-                                width: 100,
-                                margin: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: Colors.blue,
-                                  image: listLocalImageStory[index] != null
-                                      ? DecorationImage(
-                                          fit: BoxFit.cover,
-                                          image: FileImage(File(listLocalImageStory[index]!.path)),
-                                        )
-                                      : null,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                height: 380,
+                padding: const EdgeInsets.all(8),
                 margin: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -293,17 +221,34 @@ class _GetDataState extends State<GetData> {
                         ),
                       ],
                     ),
-                    textField(
-                      width: 150,
-                      controller: profileFollowingController,
-                      counterText: MyData.profileFollowing,
-                      hintText: 'profile Following',
-                      onChanged: (String text) {
-                        setState(() {
-                          MyData.profileFollowing = text;
-                          saveData(key: 'profileFollowing', value: text);
-                        });
-                      },
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        textField(
+                          width: 150,
+                          controller: profileFollowingController,
+                          counterText: MyData.profileFollowing,
+                          hintText: 'profile Following',
+                          onChanged: (String text) {
+                            setState(() {
+                              MyData.profileFollowing = text;
+                              saveData(key: 'profileFollowing', value: text);
+                            });
+                          },
+                        ),
+                        textField(
+                          width: 150,
+                          counterText: dataProvider.linkProfile,
+                          hintText: 'link profile',
+                          onChanged: (String text) {
+                            setState(() {
+                              if (text.isNotEmpty) {
+                                dataProvider.linkProfile = text;
+                              }
+                            });
+                          },
+                        ),
+                      ],
                     ),
                     textField(
                       width: 300,
@@ -316,272 +261,6 @@ class _GetDataState extends State<GetData> {
                           saveData(key: 'bio', value: text);
                         });
                       },
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                height: 1000,
-                margin: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        textField(
-                          width: 150,
-                          controller: viewController,
-                          counterText: MyData.view,
-                          hintText: 'view story',
-                          onChanged: (String text) {
-                            setState(() {
-                              MyData.view = text;
-                              saveData(key: 'view', value: text);
-                            });
-                          },
-                        ),
-                        textField(
-                          width: 150,
-                          controller: reachController,
-                          counterText: MyData.reach,
-                          hintText: 'Account reach',
-                          onChanged: (String text) {
-                            setState(() {
-                              MyData.reach = text;
-                              saveData(key: 'reach', value: text);
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        textField(
-                          width: 150,
-                          controller: engagedController,
-                          counterText: MyData.engaged,
-                          hintText: 'Account engaged',
-                          onChanged: (String text) {
-                            setState(() {
-                              MyData.engaged = text;
-                              saveData(key: 'engaged', value: text);
-                            });
-                          },
-                        ),
-                        textField(
-                          width: 150,
-                          controller: profileActivityController,
-                          counterText: MyData.profileActivity,
-                          hintText: 'profile Activity',
-                          onChanged: (String text) {
-                            setState(() {
-                              MyData.profileActivity = text;
-                              saveData(key: 'profileActivity', value: text);
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        textField(
-                          width: 150,
-                          controller: impressionController,
-                          counterText: MyData.impression,
-                          hintText: 'impression',
-                          onChanged: (String text) {
-                            setState(() {
-                              MyData.impression = text;
-                              saveData(key: 'impression', value: text);
-                            });
-                          },
-                        ),
-                        textField(
-                          width: 150,
-                          controller: intractionController,
-                          counterText: MyData.intraction,
-                          hintText: 'intraction',
-                          onChanged: (String text) {
-                            setState(() {
-                              MyData.intraction = text;
-                              saveData(key: 'intraction', value: text);
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        textField(
-                          width: 150,
-                          controller: sharesController,
-                          counterText: MyData.shares,
-                          hintText: 'shares',
-                          onChanged: (String text) {
-                            setState(() {
-                              MyData.shares = text;
-                              saveData(key: 'shares', value: text);
-                            });
-                          },
-                        ),
-                        textField(
-                          width: 150,
-                          controller: repliesController,
-                          counterText: MyData.replies,
-                          hintText: 'replies',
-                          onChanged: (String text) {
-                            setState(() {
-                              MyData.replies = text;
-                              saveData(key: 'replies', value: text);
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        textField(
-                          width: 150,
-                          controller: navigationController,
-                          counterText: MyData.navigation,
-                          hintText: 'navigation',
-                          onChanged: (String text) {
-                            setState(() {
-                              MyData.navigation = text;
-                              saveData(key: 'navigation', value: text);
-                            });
-                          },
-                        ),
-                        textField(
-                          width: 150,
-                          controller: forwardController,
-                          counterText: MyData.forward,
-                          hintText: 'forward',
-                          onChanged: (String text) {
-                            setState(() {
-                              MyData.forward = text;
-                              saveData(key: 'forward', value: text);
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        textField(
-                          width: 150,
-                          controller: exitedController,
-                          counterText: MyData.exited,
-                          hintText: 'exited',
-                          onChanged: (String text) {
-                            setState(() {
-                              MyData.exited = text;
-                              saveData(key: 'exited', value: text);
-                            });
-                          },
-                        ),
-                        textField(
-                          width: 150,
-                          controller: nextStoryController,
-                          counterText: MyData.nextStory,
-                          hintText: 'nextStory',
-                          onChanged: (String text) {
-                            setState(() {
-                              MyData.nextStory = text;
-                              saveData(key: 'nextStory', value: text);
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        textField(
-                          width: 150,
-                          controller: backController,
-                          counterText: MyData.back,
-                          hintText: 'back',
-                          onChanged: (String text) {
-                            setState(() {
-                              MyData.back = text;
-                              saveData(key: 'back', value: text);
-                            });
-                          },
-                        ),
-                        textField(
-                          width: 150,
-                          controller: profileVisitController,
-                          counterText: MyData.profileVisit,
-                          hintText: 'profileVisit',
-                          onChanged: (String text) {
-                            setState(() {
-                              MyData.profileVisit = text;
-                              saveData(key: 'profileVisit', value: text);
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        textField(
-                          width: 150,
-                          controller: followsController,
-                          counterText: MyData.follows,
-                          hintText: 'follows',
-                          onChanged: (String text) {
-                            setState(() {
-                              MyData.follows = text;
-                              saveData(key: 'follows', value: text);
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        textField(
-                          width: 150,
-                          keyboardType: TextInputType.number,
-                          controller: followerController,
-                          counterText: slider.follower.toString(),
-                          hintText: 'follower chart',
-                          onChanged: (String text) {
-                            setState(() {
-                              if (text.isNotEmpty) {
-                                slider.follower = int.parse(text);
-                              }
-                            });
-                          },
-                        ),
-                        textField(
-                          width: 150,
-                          keyboardType: TextInputType.number,
-                          controller: nonFollowerController,
-                          counterText: slider.nonFollower.toString(),
-                          hintText: 'non follower chart',
-                          onChanged: (String text) {
-                            setState(() {
-                              if (text.isNotEmpty) {
-                                slider.nonFollower = int.parse(text);
-                              }
-                            });
-                          },
-                        ),
-                      ],
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -605,6 +284,525 @@ class _GetDataState extends State<GetData> {
                   ],
                 ),
               ),
+              //! Story
+              Container(
+                width: MediaQuery.of(context).size.width,
+                margin: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        SizedBox(
+                          width: 150,
+                          child: TextFormField(
+                            keyboardType: TextInputType.number,
+                            validator: (String? value) {
+                              if (value!.isEmpty || value == null) {
+                                return 'باید یک عدد وارد کنی';
+                              }
+                              return null;
+                            },
+                            controller: storyCountController,
+                            decoration: InputDecoration(
+                              counterText: storyNumber.number.toString(),
+                              hintText: 'تعداد استوری',
+                            ),
+                          ),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            if (_globalKey.currentState!.validate()) {
+                              setState(() {
+                                storyNumber.number = int.parse(storyCountController.text);
+                                if (MyData.storyCount != null && storyCountController.text.isNotEmpty) {
+                                  MyData.storyCount = int.parse(storyCountController.text);
+                                }
+                                saveData(key: 'storyCount', count: int.parse(storyCountController.text));
+                              });
+                            }
+                          },
+                          child: const Text('بساز'),
+                        ),
+                      ],
+                    ),
+                    Flexible(
+                      fit: FlexFit.loose,
+                      child: SizedBox(
+                        height: 200,
+                        child: ListView.builder(
+                          physics: const BouncingScrollPhysics(),
+                          scrollDirection: Axis.horizontal,
+                          itemCount: storyNumber.number,
+                          itemBuilder: (context, index) {
+                            return GestureDetector(
+                              onTap: () {
+                                storyProvider.getImageStory(index);
+                              },
+                              child: Container(
+                                width: 80,
+                                margin: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.blue,
+                                  image: storyProvider.listLocalImageStory[index] != null
+                                      ? DecorationImage(
+                                          fit: BoxFit.cover,
+                                          image: FileImage(File(storyProvider.listLocalImageStory[index]!.path)),
+                                        )
+                                      : null,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                    Container(
+                      width: size.width,
+                      height: size.height * 2.1,
+                      child: PageView.builder(
+                        itemCount: storyNumber.number,
+                        itemBuilder: (context, index) {
+                          return Container(
+                            child: Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  child: Text(
+                                    'Story ${index + 1}',
+                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 30),
+                                  ),
+                                ),
+                                //! view Story & Reach
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  children: [
+                                    textField(
+                                      width: 150,
+                                      keyboardType: TextInputType.number,
+                                      counterText: data.viewStory[index].toString(),
+                                      hintText: 'view story',
+                                      onChanged: (String text) {
+                                        setState(() {
+                                          if (text.isNotEmpty) {
+                                            data.saveViewStory(value: int.parse(text), index: index);
+                                          }
+                                        });
+                                      },
+                                    ),
+                                    textField(
+                                      width: 150,
+                                      keyboardType: TextInputType.number,
+                                      counterText: data.reach[index].toString(),
+                                      hintText: 'Account reach',
+                                      onChanged: (String text) {
+                                        setState(() {
+                                          if (text.isNotEmpty) {
+                                            data.saveReach(value: int.parse(text), index: index);
+                                          }
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
+                                const Divider(color: Colors.black, height: 50),
+                                //! follower chart & non follower chart
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  children: [
+                                    textField(
+                                      width: 150,
+                                      keyboardType: TextInputType.number,
+                                      counterText: data.followerChart[index].toString(),
+                                      hintText: 'follower chart',
+                                      onChanged: (String text) {
+                                        setState(() {
+                                          if (text.isNotEmpty) {
+                                            data.saveFollowerChart(value: int.parse(text), index: index);
+                                          }
+                                        });
+                                      },
+                                    ),
+                                    textField(
+                                      width: 150,
+                                      keyboardType: TextInputType.number,
+                                      counterText: data.nonFollowerChart[index].toString(),
+                                      hintText: 'non follower chart',
+                                      onChanged: (String text) {
+                                        setState(() {
+                                          if (text.isNotEmpty) {
+                                            data.saveNonFollowerChart(value: int.parse(text), index: index);
+                                          }
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
+
+                                const Divider(color: Colors.black, height: 50),
+                                //! impression
+                                textField(
+                                  width: 150,
+                                  keyboardType: TextInputType.number,
+                                  controller: impressionController,
+                                  counterText: data.impression[index].toString(),
+                                  hintText: 'impression',
+                                  onChanged: (String text) {
+                                    setState(() {
+                                      if (text.isNotEmpty) {
+                                        data.saveImpression(value: int.parse(text), index: index);
+                                      }
+                                    });
+                                  },
+                                ),
+                                const Divider(color: Colors.black, height: 50),
+                                //! Account engaged
+                                textField(
+                                  width: 150,
+                                  keyboardType: TextInputType.number,
+                                  counterText: data.engaged[index].toString(),
+                                  hintText: 'Account engaged',
+                                  onChanged: (String text) {
+                                    setState(() {
+                                      if (text.isNotEmpty) {
+                                        data.saveEngaged(value: int.parse(text), index: index);
+                                      }
+                                    });
+                                  },
+                                ),
+                                const Divider(color: Colors.black, height: 50),
+                                //! shares & replies
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  children: [
+                                    textField(
+                                      width: 150,
+                                      keyboardType: TextInputType.number,
+                                      counterText: data.share[index].toString(),
+                                      hintText: 'shares',
+                                      onChanged: (String text) {
+                                        setState(() {
+                                          if (text.isNotEmpty) {
+                                            data.saveShare(value: int.parse(text), index: index);
+                                          }
+                                        });
+                                      },
+                                    ),
+                                    textField(
+                                      width: 150,
+                                      keyboardType: TextInputType.number,
+                                      counterText: data.replies[index].toString(),
+                                      hintText: 'replies',
+                                      onChanged: (String text) {
+                                        setState(() {
+                                          if (text.isNotEmpty) {
+                                            data.saveReplies(value: int.parse(text), index: index);
+                                          }
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
+                                const Divider(color: Colors.black, height: 50),
+                                //! link
+                                textField(
+                                  width: 150,
+                                  keyboardType: TextInputType.number,
+                                  counterText: data.link[index].toString(),
+                                  hintText: 'Links Clicks',
+                                  onChanged: (String text) {
+                                    setState(() {
+                                      if (text.isNotEmpty) {
+                                        data.saveLink(value: int.parse(text), index: index);
+                                      }
+                                    });
+                                  },
+                                ),
+                                const Divider(color: Colors.black, height: 50),
+                                //! sticker tap
+                                textField(
+                                  width: 150,
+                                  keyboardType: TextInputType.number,
+                                  counterText: data.stickerTap[index].toString(),
+                                  hintText: 'Sticker taps',
+                                  onChanged: (String text) {
+                                    setState(() {
+                                      if (text.isNotEmpty) {
+                                        data.saveStickerTap(value: int.parse(text), index: index);
+                                      }
+                                    });
+                                  },
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  children: [
+                                    textField(
+                                      width: 150,
+                                      keyboardType: TextInputType.number,
+                                      counterText: data.tap1[index].toString(),
+                                      hintText: 'Sticker tap 1',
+                                      onChanged: (String text) {
+                                        setState(() {
+                                          if (text.isNotEmpty) {
+                                            data.saveTap1(value: int.parse(text), index: index);
+                                          }
+                                        });
+                                      },
+                                    ),
+                                    textField(
+                                      width: 150,
+                                      counterText: data.nameTap1[index],
+                                      hintText: 'Name tap 1',
+                                      onChanged: (String text) {
+                                        setState(() {
+                                          if (text.isNotEmpty) {
+                                            data.saveNameTap1(value: text, index: index);
+                                          }
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  children: [
+                                    textField(
+                                      width: 150,
+                                      keyboardType: TextInputType.number,
+                                      counterText: data.tap2[index].toString(),
+                                      hintText: 'Sticker tap 2',
+                                      onChanged: (String text) {
+                                        setState(() {
+                                          if (text.isNotEmpty) {
+                                            data.saveTap2(value: int.parse(text), index: index);
+                                          }
+                                        });
+                                      },
+                                    ),
+                                    textField(
+                                      width: 150,
+                                      counterText: data.nameTap2[index],
+                                      hintText: 'Name tap 2',
+                                      onChanged: (String text) {
+                                        setState(() {
+                                          if (text.isNotEmpty) {
+                                            data.saveNameTap2(value: text, index: index);
+                                          }
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  children: [
+                                    textField(
+                                      width: 150,
+                                      keyboardType: TextInputType.number,
+                                      counterText: data.tap3[index].toString(),
+                                      hintText: 'Sticker tap 3',
+                                      onChanged: (String text) {
+                                        setState(() {
+                                          if (text.isNotEmpty) {
+                                            data.saveTap3(value: int.parse(text), index: index);
+                                          }
+                                        });
+                                      },
+                                    ),
+                                    textField(
+                                      width: 150,
+                                      counterText: data.nameTap3[index],
+                                      hintText: 'Name tap 3',
+                                      onChanged: (String text) {
+                                        setState(() {
+                                          if (text.isNotEmpty) {
+                                            data.saveNameTap3(value: text, index: index);
+                                          }
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
+                                const Divider(color: Colors.black, height: 50),
+                                //! Navigation
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  children: [
+                                    textField(
+                                      width: 150,
+                                      keyboardType: TextInputType.number,
+                                      counterText: data.forward[index].toString(),
+                                      hintText: 'forward',
+                                      onChanged: (String text) {
+                                        setState(() {
+                                          if (text.isNotEmpty) {
+                                            data.saveForward(value: int.parse(text), index: index);
+                                          }
+                                        });
+                                      },
+                                    ),
+                                    textField(
+                                      width: 150,
+                                      keyboardType: TextInputType.number,
+                                      counterText: data.exited[index].toString(),
+                                      hintText: 'exited',
+                                      onChanged: (String text) {
+                                        setState(() {
+                                          if (text.isNotEmpty) {
+                                            data.saveExited(value: int.parse(text), index: index);
+                                          }
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  children: [
+                                    textField(
+                                      width: 150,
+                                      keyboardType: TextInputType.number,
+                                      counterText: data.nextStory[index].toString(),
+                                      hintText: 'nextStory',
+                                      onChanged: (String text) {
+                                        setState(() {
+                                          if (text.isNotEmpty) {
+                                            data.saveNextStory(value: int.parse(text), index: index);
+                                          }
+                                        });
+                                      },
+                                    ),
+                                    textField(
+                                      width: 150,
+                                      keyboardType: TextInputType.number,
+                                      counterText: data.back[index].toString(),
+                                      hintText: 'back',
+                                      onChanged: (String text) {
+                                        setState(() {
+                                          if (text.isNotEmpty) {
+                                            data.saveBack(value: int.parse(text), index: index);
+                                          }
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
+                                const Divider(color: Colors.black, height: 50),
+                                //! profile activity
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  children: [
+                                    textField(
+                                      width: 150,
+                                      keyboardType: TextInputType.number,
+                                      counterText: data.profileVisit[index].toString(),
+                                      hintText: 'profileVisit',
+                                      onChanged: (String text) {
+                                        setState(() {
+                                          if (text.isNotEmpty) {
+                                            data.saveProfileVisit(value: int.parse(text), index: index);
+                                          }
+                                        });
+                                      },
+                                    ),
+                                    textField(
+                                      width: 150,
+                                      keyboardType: TextInputType.number,
+                                      counterText: data.follows[index].toString(),
+                                      hintText: 'follows',
+                                      onChanged: (String text) {
+                                        setState(() {
+                                          if (text.isNotEmpty) {
+                                            data.saveFollows(value: int.parse(text), index: index);
+                                          }
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
+                                const Divider(color: Colors.black, height: 50),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              //! ------------++++--------------++++----------
+              Container(
+                margin: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        textField(
+                          width: 150,
+                          controller: profileActivityController,
+                          counterText: MyData.profileActivity,
+                          hintText: 'profile Activity',
+                          onChanged: (String text) {
+                            setState(() {
+                              MyData.profileActivity = text;
+                              saveData(key: 'profileActivity', value: text);
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        textField(
+                          width: 150,
+                          controller: intractionController,
+                          counterText: MyData.intraction,
+                          hintText: 'intraction',
+                          onChanged: (String text) {
+                            setState(() {
+                              MyData.intraction = text;
+                              saveData(key: 'intraction', value: text);
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        textField(
+                          width: 150,
+                          controller: navigationController,
+                          counterText: MyData.navigation,
+                          hintText: 'navigation',
+                          onChanged: (String text) {
+                            setState(() {
+                              MyData.navigation = text;
+                              saveData(key: 'navigation', value: text);
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [],
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
@@ -613,7 +811,7 @@ class _GetDataState extends State<GetData> {
   }
 
   Widget textField({
-    required TextEditingController? controller,
+    TextEditingController? controller,
     required String? counterText,
     required String? hintText,
     required Function(String)? onChanged,

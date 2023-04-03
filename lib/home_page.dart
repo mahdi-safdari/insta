@@ -6,8 +6,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:instagram/account_tab1.dart';
 import 'package:instagram/account_tab2.dart';
 import 'package:instagram/account_tab3.dart';
-import 'package:instagram/data_Provider.dart';
+import 'package:instagram/my_data.dart';
 import 'package:instagram/providers/avatar_provider.dart';
+import 'package:instagram/providers/data_provider.dart';
 import 'package:instagram/story_page.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:path_provider/path_provider.dart';
@@ -80,11 +81,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin, Auto
     super.initState();
   }
 
+  int tabBarIndex = 0;
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
     final avatar = Provider.of<AvatarProvider>(context);
     final Size size = MediaQuery.of(context).size;
+    final dataProvider = Provider.of<DataProvider>(context);
     return DefaultTabController(
       length: 3,
       child: Scaffold(
@@ -102,7 +106,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin, Auto
             ],
           ),
           actions: [
-            SizedBox(width: 20, height: 20, child: Image.asset('assets/image/add.png')),
+            SizedBox(width: 20, height: 20, child: SvgPicture.asset('assets/svg/add.svg')),
             const SizedBox(width: 20),
             SizedBox(width: 20, height: 20, child: SvgPicture.asset('assets/image/menu-burger.svg')),
             const SizedBox(width: 20),
@@ -112,9 +116,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin, Auto
           physics: const BouncingScrollPhysics(),
           child: SizedBox(
             width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height,
+            height: MediaQuery.of(context).size.height * 100,
             child: Column(
-              mainAxisSize: MainAxisSize.min,
+              // mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
@@ -254,9 +258,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin, Auto
                   child: Row(
                     children: [
                       Transform.rotate(angle: 2, child: const Icon(Icons.link, size: 20, color: Color.fromARGB(255, 19, 107, 180))),
-                      const Text(
-                        't.me/+QJBKILONKLJNOIBJBJKGGF',
-                        style: TextStyle(
+                      Text(
+                        dataProvider.linkProfile,
+                        style: const TextStyle(
                           color: Color.fromARGB(255, 19, 107, 180),
                           fontWeight: FontWeight.w500,
                         ),
@@ -348,20 +352,26 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin, Auto
                 hilight(),
                 //! Tab Bar
                 TabBar(
+                  onTap: (index) {
+                    setState(() {
+                      tabBarIndex = index;
+                    });
+                  },
                   unselectedLabelColor: Colors.grey,
                   tabs: [
                     Tab(
-                      icon: SizedBox(width: 20, height: 20, child: SvgPicture.asset('assets/image/grid.svg')),
+                      icon: SizedBox(width: 25, height: 25, child: SvgPicture.asset('assets/svg/grid_main.svg', color: tabBarIndex != 0 ? Colors.grey : null)),
                     ),
                     Tab(
-                      icon: SizedBox(width: 20, height: 20, child: Image.asset('assets/image/video.png')),
+                      icon: SizedBox(width: 24, height: 24, child: SvgPicture.asset('assets/svg/reel.svg', color: tabBarIndex != 1 ? Colors.grey : null)),
                     ),
                     Tab(
-                      icon: SizedBox(width: 20, height: 20, child: SvgPicture.asset('assets/image/portrait.svg')),
+                      icon: SizedBox(width: 20, height: 20, child: SvgPicture.asset('assets/image/portrait.svg', color: tabBarIndex != 2 ? Colors.grey : null)),
                     ),
                   ],
                 ),
-                Expanded(
+
+                Flexible(
                   child: TabBarView(
                     children: [
                       const AccountTab1(),

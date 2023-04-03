@@ -1,15 +1,19 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:instagram/data_provider.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:instagram/my_data.dart';
+import 'package:instagram/providers/data_provider.dart';
 import 'package:instagram/providers/slider_provider.dart';
+import 'package:instagram/providers/story_data_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 class OverView extends StatefulWidget {
-  const OverView({super.key});
+  final int dataIndex;
+  const OverView({super.key, required this.dataIndex});
 
   @override
   State<OverView> createState() => _OverViewState();
@@ -45,15 +49,31 @@ class _OverViewState extends State<OverView> {
 
   late List<_ChartData> data;
   late TooltipBehavior _tooltip;
+  bool _isLoading = true;
   @override
   void initState() {
     getData();
     super.initState();
+    Future.delayed(const Duration(seconds: 1), () {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final slider = Provider.of<SliderProvider>(context);
+    final dataProvider = Provider.of<DataProvider>(context);
+    final dataStory = Provider.of<StoryDataProvider>(context);
     var n = slider.follower - slider.nonFollower;
     var space = n / pi * 0.08;
 
@@ -65,6 +85,23 @@ class _OverViewState extends State<OverView> {
     ];
     _tooltip = TooltipBehavior(enable: true);
     final formatter = NumberFormat('#,###');
+    //! Loading
+    if (_isLoading) {
+      return Container(
+        color: Colors.white,
+        child: Center(
+          child: SizedBox(
+            width: 50,
+            height: 50,
+            child: CircularProgressIndicator(
+              backgroundColor: Colors.grey.shade300,
+              color: Colors.grey[500],
+              strokeWidth: 1,
+            ),
+          ),
+        ),
+      );
+    }
 
     return SingleChildScrollView(
       child: Column(
@@ -79,24 +116,24 @@ class _OverViewState extends State<OverView> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   Row(
-                    children: const [
-                      Text(
+                    children: [
+                      const Text(
                         'Overview',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 20,
                         ),
                       ),
-                      SizedBox(width: 10),
-                      Icon(Icons.error_outline_sharp, size: 20)
+                      const SizedBox(width: 10),
+                      SvgPicture.asset('assets/svg/ThreadDetails.svg', width: 18, height: 18),
                     ],
                   ),
                   const SizedBox(height: 25),
-                  TextAndNumber(text: 'Accounts reached', number: MyData.reach ?? '89'),
+                  TextAndNumber(text: 'Accounts reached', number: formatter.format(dataStory.reach[widget.dataIndex])),
                   const SizedBox(height: 25),
-                  TextAndNumber(text: 'Accounts engaged', number: MyData.engaged ?? '--'),
+                  TextAndNumber(text: 'Accounts engaged', number: formatter.format(dataStory.engaged[widget.dataIndex])),
                   const SizedBox(height: 25),
-                  TextAndNumber(text: 'Profile activity', number: MyData.profileActivity ?? '350'),
+                  TextAndNumber(text: 'Profile activity', number: formatter.format(dataStory.profileVisit[widget.dataIndex] + dataStory.follows[widget.dataIndex])),
                   const SizedBox(height: 30),
                 ],
               ),
@@ -114,16 +151,16 @@ class _OverViewState extends State<OverView> {
                   Padding(
                     padding: const EdgeInsets.only(top: 35),
                     child: Row(
-                      children: const [
-                        Text(
+                      children: [
+                        const Text(
                           'Reach',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 20,
                           ),
                         ),
-                        SizedBox(width: 10),
-                        Icon(Icons.error_outline_sharp, size: 20)
+                        const SizedBox(width: 10),
+                        SvgPicture.asset('assets/svg/ThreadDetails.svg', width: 18, height: 18),
                       ],
                     ),
                   ),
@@ -132,7 +169,7 @@ class _OverViewState extends State<OverView> {
                     child: Column(
                       children: [
                         Text(
-                          MyData.reach ?? '89',
+                          formatter.format(dataStory.reach[widget.dataIndex]),
                           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
                         ),
                         const SizedBox(height: 16),
@@ -153,7 +190,7 @@ class _OverViewState extends State<OverView> {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(
-                            formatter.format(slider.follower),
+                            formatter.format(dataStory.followerChart[widget.dataIndex]),
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           Row(
@@ -186,6 +223,8 @@ class _OverViewState extends State<OverView> {
                           tooltipBehavior: _tooltip,
                           series: <CircularSeries<_ChartData, String>>[
                             DoughnutSeries<_ChartData, String>(
+                              animationDelay: 0,
+                              animationDuration: 0,
                               strokeWidth: 10,
                               pointColorMapper: (_ChartData datum, int index) {
                                 if (index == 1) {
@@ -198,7 +237,6 @@ class _OverViewState extends State<OverView> {
                               dataSource: data,
                               xValueMapper: (_ChartData data, _) => data.x,
                               yValueMapper: (_ChartData data, _) => data.y,
-                              name: 'Gold',
                               innerRadius: '37',
                             ),
                           ],
@@ -210,7 +248,7 @@ class _OverViewState extends State<OverView> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            formatter.format(slider.nonFollower),
+                            formatter.format(dataStory.nonFollowerChart[widget.dataIndex]),
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           Row(
@@ -255,7 +293,7 @@ class _OverViewState extends State<OverView> {
                       Padding(
                         padding: const EdgeInsets.only(right: 20),
                         child: Text(
-                          MyData.impression ?? '94',
+                          formatter.format(dataStory.impression[widget.dataIndex]),
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ),
@@ -269,23 +307,23 @@ class _OverViewState extends State<OverView> {
           //! Engagement
           Container(
             color: Colors.white,
-            height: 600,
+            // height: 800,
             child: Column(
               children: [
                 //! Engagement
                 Padding(
                   padding: const EdgeInsets.only(top: 35, left: 16),
                   child: Row(
-                    children: const [
-                      Text(
+                    children: [
+                      const Text(
                         'Engagement',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 20,
                         ),
                       ),
-                      SizedBox(width: 10),
-                      Icon(Icons.error_outline_sharp, size: 20)
+                      const SizedBox(width: 10),
+                      SvgPicture.asset('assets/svg/ThreadDetails.svg', width: 18, height: 18),
                     ],
                   ),
                 ),
@@ -296,7 +334,7 @@ class _OverViewState extends State<OverView> {
                       child: Column(
                         children: [
                           Text(
-                            MyData.engaged ?? '89',
+                            formatter.format(dataStory.engaged[widget.dataIndex]),
                             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
                           ),
                           const SizedBox(height: 16),
@@ -329,7 +367,7 @@ class _OverViewState extends State<OverView> {
                       Padding(
                         padding: const EdgeInsets.only(right: 16),
                         child: Text(
-                          MyData.intraction ?? '10',
+                          formatter.format(dataStory.share[widget.dataIndex] + dataStory.replies[widget.dataIndex]),
                           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                         ),
                       ),
@@ -339,19 +377,105 @@ class _OverViewState extends State<OverView> {
                 //! Shares
                 Padding(
                   padding: const EdgeInsets.only(left: 20, top: 30),
-                  child: TextAndNumber(text: 'Shares', number: MyData.shares ?? '5'),
+                  child: TextAndNumber(text: 'Shares', number: formatter.format(dataStory.share[widget.dataIndex])),
                 ),
                 //! Replies
                 Padding(
                   padding: const EdgeInsets.only(left: 20, top: 30),
-                  child: TextAndNumber(text: 'Replies', number: MyData.replies ?? '0'),
+                  child: TextAndNumber(text: 'Replies', number: formatter.format(dataStory.replies[widget.dataIndex])),
+                ),
+                //! Divider
+                Visibility(
+                  visible: dataStory.link[widget.dataIndex] != 0,
+                  child: const Padding(
+                    padding: EdgeInsets.only(top: 20, bottom: 20),
+                    child: Divider(),
+                  ),
+                ),
+                //! Link Clicks
+                Visibility(
+                  visible: dataStory.link[widget.dataIndex] != 0,
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 20),
+                    child: TextAndNumber(text: 'Link Clicks', number: formatter.format(dataStory.link[widget.dataIndex])),
+                  ),
                 ),
                 //! Divider
                 const Padding(
                   padding: EdgeInsets.only(top: 20, bottom: 20),
                   child: Divider(),
                 ),
-                //! ---
+
+                //! Sticker taps
+                Visibility(
+                  visible: dataStory.stickerTap[widget.dataIndex] != 0,
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(left: 20),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Sticker taps',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(right: 16),
+                              child: Text(
+                                formatter.format(dataStory.stickerTap[widget.dataIndex]),
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      //! tag 1
+                      Visibility(
+                        visible: dataProvider.tap1 != 0,
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 20, top: 30),
+                          child: TextAndNumber(
+                            text: '@${dataStory.nameTap1[widget.dataIndex]}',
+                            number: formatter.format(dataProvider.tap1),
+                          ),
+                        ),
+                      ),
+                      //! tag 2
+                      Visibility(
+                        visible: dataProvider.tap2 != 0,
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 20, top: 30),
+                          child: TextAndNumber(
+                            text: '@${dataStory.nameTap2[widget.dataIndex]}',
+                            number: formatter.format(dataProvider.tap2),
+                          ),
+                        ),
+                      ),
+                      //! tag 3
+                      Visibility(
+                        visible: dataStory.tap3[widget.dataIndex] != 0,
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 20, top: 30),
+                          child: TextAndNumber(
+                            text: '@${dataStory.nameTap3[widget.dataIndex]}',
+                            number: formatter.format(dataProvider.tap3),
+                          ),
+                        ),
+                      ),
+                      //! Divider
+                      const Padding(
+                        padding: EdgeInsets.only(top: 20, bottom: 20),
+                        child: Divider(),
+                      ),
+                    ],
+                  ),
+                ),
+
+                //! Navigation
                 Padding(
                   padding: const EdgeInsets.only(left: 20),
                   child: Row(
@@ -367,7 +491,7 @@ class _OverViewState extends State<OverView> {
                       Padding(
                         padding: const EdgeInsets.only(right: 16),
                         child: Text(
-                          MyData.navigation ?? '133',
+                          formatter.format(dataStory.forward[widget.dataIndex] + dataStory.exited[widget.dataIndex] + dataStory.nextStory[widget.dataIndex] + dataStory.back[widget.dataIndex]),
                           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                         ),
                       ),
@@ -377,29 +501,29 @@ class _OverViewState extends State<OverView> {
                 //! Forward
                 Padding(
                   padding: const EdgeInsets.only(left: 20, top: 30),
-                  child: TextAndNumber(text: 'Forward', number: MyData.forward ?? '107'),
+                  child: TextAndNumber(text: 'Forward', number: formatter.format(dataStory.forward[widget.dataIndex])),
                 ),
                 //! Exited
                 Padding(
                   padding: const EdgeInsets.only(left: 20, top: 30),
-                  child: TextAndNumber(text: 'Exited', number: MyData.exited ?? '15'),
+                  child: TextAndNumber(text: 'Exited', number: formatter.format(dataStory.exited[widget.dataIndex])),
                 ),
                 //! Next Story
                 Padding(
                   padding: const EdgeInsets.only(left: 20, top: 30),
-                  child: TextAndNumber(text: 'Next story', number: MyData.nextStory ?? '10'),
+                  child: TextAndNumber(text: 'Next story', number: formatter.format(dataStory.nextStory[widget.dataIndex])),
                 ),
                 //! Back
                 Padding(
-                  padding: const EdgeInsets.only(left: 20, top: 30),
-                  child: TextAndNumber(text: 'Back', number: MyData.back ?? '1'),
+                  padding: const EdgeInsets.only(left: 20, top: 30, bottom: 20),
+                  child: TextAndNumber(text: 'Back', number: formatter.format(dataStory.back[widget.dataIndex])),
                 ),
               ],
             ),
           ),
-          //! Profile activity
           const SizedBox(height: 8),
 
+          //! Profile activity
           Container(
             height: 150,
             color: Colors.white,
@@ -412,22 +536,22 @@ class _OverViewState extends State<OverView> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Row(
-                        children: const [
-                          Text(
+                        children: [
+                          const Text(
                             'Profile activity',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 20,
                             ),
                           ),
-                          SizedBox(width: 10),
-                          Icon(Icons.error_outline_sharp, size: 20),
+                          const SizedBox(width: 10),
+                          SvgPicture.asset('assets/svg/ThreadDetails.svg', width: 18, height: 18),
                         ],
                       ),
                       Padding(
                         padding: const EdgeInsets.only(right: 15),
                         child: Text(
-                          MyData.profileActivity ?? '0',
+                          formatter.format(dataStory.profileVisit[widget.dataIndex] + dataStory.follows[widget.dataIndex]),
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 20,
@@ -436,8 +560,8 @@ class _OverViewState extends State<OverView> {
                       ),
                     ],
                   ),
-                  TextAndNumber(text: 'Profile visits', number: MyData.profileVisit ?? '19'),
-                  TextAndNumber(text: 'Follows', number: MyData.follows ?? '100'),
+                  TextAndNumber(text: 'Profile visits', number: formatter.format(dataStory.profileVisit[widget.dataIndex])),
+                  TextAndNumber(text: 'Follows', number: formatter.format(dataStory.follows[widget.dataIndex])),
                 ],
               ),
             ),
@@ -449,9 +573,9 @@ class _OverViewState extends State<OverView> {
 }
 
 class TextAndNumber extends StatelessWidget {
-  final String text;
-  final String number;
-  const TextAndNumber({super.key, required this.text, required this.number});
+  final String? text;
+  final String? number;
+  const TextAndNumber({super.key, this.text, this.number});
 
   @override
   Widget build(BuildContext context) {
@@ -460,8 +584,8 @@ class TextAndNumber extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(text),
-          Text(number),
+          Text(text!),
+          Text(number!),
         ],
       ),
     );

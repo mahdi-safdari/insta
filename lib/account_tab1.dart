@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:instagram/data_provider.dart';
 import 'package:instagram/providers/story_number_provider.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';

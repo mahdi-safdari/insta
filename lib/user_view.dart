@@ -1,7 +1,9 @@
 import 'dart:math';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:instagram/providers/csv/get_csv.dart';
 
 class UserView extends StatefulWidget {
   const UserView({super.key});
@@ -12,6 +14,7 @@ class UserView extends StatefulWidget {
 
 class _UserViewState extends State<UserView> {
   late List<String> images;
+  List<List<dynamic>> myList = [];
   @override
   void initState() {
     final List<String> images1 = List.generate(99, (index) => 'https://randomuser.me/api/portraits/${RandomImage.gender[Random().nextInt(2)]}/$index.jpg');
@@ -19,6 +22,13 @@ class _UserViewState extends State<UserView> {
     images = [...images1, ...images2];
     images.shuffle(Random());
     super.initState();
+    MyClass().readCSV().then((data) {
+      setState(() {
+        myList = data;
+        myList.shuffle(Random());
+        print('=========>>>>>  ${data.length}');
+      });
+    });
   }
 
   @override
@@ -26,7 +36,8 @@ class _UserViewState extends State<UserView> {
     return Container(
       color: Colors.white,
       child: ListView.builder(
-        itemCount: 100,
+        itemCount: myList.length,
+        // itemCount: 100,
         itemBuilder: (context, index) {
           if (index == 0) {
             return Column(
@@ -88,34 +99,64 @@ class _UserViewState extends State<UserView> {
               children: [
                 Row(
                   children: [
+                    // Padding(
+                    //   padding: const EdgeInsets.only(right: 16),
+                    //   child: Container(width: 50, height: 50, color: Colors.amber),
+                    // ),
                     Padding(
                       padding: const EdgeInsets.only(right: 16),
-                      child: Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          image: DecorationImage(
-                            fit: BoxFit.cover,
-                            image: NetworkImage('https://randomuser.me/api/portraits/${RandomImage.gender[Random().nextInt(2)]}/${Random().nextInt(100)}.jpg'),
-                          ),
-                        ),
+                      child: CachedNetworkImage(
+                        // imageUrl: 'https://randomuser.me/api/portraits/${RandomImage.gender[Random().nextInt(2)]}/${Random().nextInt(100)}.jpg',
+                        imageUrl: 'https://randomuser.me/api/portraits/${RandomImage.gender[Random().nextInt(2)]}/${Random().nextInt(100)}.jpg',
+                        errorWidget: (context, url, error) {
+                          return Container(
+                            width: 50,
+                            height: 50,
+                          );
+                        },
+                        placeholder: (context, url) {
+                          return Container(
+                            width: 50,
+                            height: 50,
+                          );
+                        },
+                        imageBuilder: (context, imageProvider) {
+                          return Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              image: DecorationImage(
+                                fit: BoxFit.cover,
+                                image: imageProvider,
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     ),
+                    //! names
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          RandomUserName.usernames[Random().nextInt(90)],
+                          myList[index][0],
+                          // RandomUserName.usernames[Random().nextInt(90)],
                           style: const TextStyle(
                             fontSize: 15.0,
                           ),
                         ),
-                        Text(
-                          RandomUserName.names[Random().nextInt(90)],
-                          style: const TextStyle(
-                            fontSize: 15.0,
-                            color: Colors.grey,
+                        SizedBox(
+                          width: 205,
+                          child: Text(
+                            myList[index][1],
+                            // RandomUserName.names[Random().nextInt(90)],
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 15.0,
+                              color: Colors.grey,
+                            ),
                           ),
                         ),
                       ],
@@ -128,7 +169,7 @@ class _UserViewState extends State<UserView> {
                     children: [
                       const Icon(Icons.more_vert_rounded),
                       const SizedBox(width: 25),
-                      SizedBox(height: 22, width: 22, child: SvgPicture.asset('assets/image/send.svg')),
+                      SizedBox(height: 22, width: 22, child: SvgPicture.asset('assets/svg/send.svg')),
                     ],
                   ),
                 ),

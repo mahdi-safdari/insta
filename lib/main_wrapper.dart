@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:instagram/data_provider.dart';
+import 'package:instagram/my_data.dart';
 import 'package:instagram/get_data.dart';
 import 'package:instagram/home_page.dart';
 import 'package:instagram/icon/uicons.dart';
@@ -17,13 +17,13 @@ class MainWrapper extends StatefulWidget {
 }
 
 class _MainWrapperState extends State<MainWrapper> {
-  int _selectedIndex = 0;
+  int _selectedIndex = 2;
   MyData data = MyData();
   static const List<Widget> _widgetOptions = <Widget>[
-    Text('تنظیمات'),
-    Text('سرچ'),
+    Text('Home page'),
+    Text('Search'),
     GetData(),
-    Text('پروفایل'),
+    Text('Reel'),
     HomePage(),
   ];
 
@@ -45,19 +45,22 @@ class _MainWrapperState extends State<MainWrapper> {
         type: BottomNavigationBarType.fixed,
         items: [
           BottomNavigationBarItem(
-            icon: SizedBox(width: 20, height: 20, child: Image.asset('assets/image/hut.png')),
-            label: '',
-          ),
-          const BottomNavigationBarItem(
-            icon: Icon(Uicons.fiRrSearch, color: Colors.black, size: 30),
+            activeIcon: SizedBox(width: 20, height: 20, child: SvgPicture.asset('assets/svg/home_dark.svg')),
+            icon: SizedBox(width: 20, height: 20, child: SvgPicture.asset('assets/svg/home.svg')),
             label: '',
           ),
           BottomNavigationBarItem(
-            icon: SizedBox(width: 20, height: 20, child: Image.asset('assets/image/add.png')),
+            activeIcon: SizedBox(width: 20, height: 20, child: SvgPicture.asset('assets/svg/search_dark.svg')),
+            icon: SizedBox(width: 20, height: 20, child: SvgPicture.asset('assets/svg/search.svg')),
             label: '',
           ),
           BottomNavigationBarItem(
-            icon: SizedBox(width: 20, height: 20, child: Image.asset('assets/image/video.png')),
+            icon: SizedBox(width: 20, height: 20, child: SvgPicture.asset('assets/svg/add.svg')),
+            label: '',
+          ),
+          BottomNavigationBarItem(
+            activeIcon: SizedBox(width: 20, height: 20, child: SvgPicture.asset('assets/svg/reel_dark.svg')),
+            icon: SizedBox(width: 24, height: 24, child: SvgPicture.asset('assets/svg/reel.svg')),
             label: '',
           ),
           BottomNavigationBarItem(
