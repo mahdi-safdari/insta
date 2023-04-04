@@ -140,7 +140,7 @@ class _UserViewState extends State<UserView> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          myList[index][0],
+                          myList[index][0].toString(),
                           // RandomUserName.usernames[Random().nextInt(90)],
                           style: const TextStyle(
                             fontSize: 15.0,

@@ -75,8 +75,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin, Auto
     });
   }
 
+  late TabController _tabController;
   @override
   void initState() {
+    _tabController = TabController(length: 3, vsync: this);
+    _tabController.addListener(() {
+      setState(() {
+        _tabController.indexIsChanging;
+      });
+    });
     getData();
     super.initState();
   }
@@ -89,299 +96,317 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin, Auto
     final avatar = Provider.of<AvatarProvider>(context);
     final Size size = MediaQuery.of(context).size;
     final dataProvider = Provider.of<DataProvider>(context);
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          title: Row(
-            children: [
-              //! user name
-              Text(MyData.userName ?? 'userName', style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-              const SizedBox(width: 7),
-              SvgPicture.asset('assets/image/angle-small-down.svg'),
-              Container(width: 8, height: 8, decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.red)),
-            ],
-          ),
-          actions: [
-            SizedBox(width: 20, height: 20, child: SvgPicture.asset('assets/svg/add.svg')),
-            const SizedBox(width: 20),
-            SizedBox(width: 20, height: 20, child: SvgPicture.asset('assets/image/menu-burger.svg')),
-            const SizedBox(width: 20),
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Row(
+          children: [
+            //! user name
+            Text(MyData.userName ?? 'userName', style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+            const SizedBox(width: 7),
+            SvgPicture.asset('assets/image/angle-small-down.svg'),
+            Container(width: 8, height: 8, decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.red)),
           ],
         ),
-        body: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: SizedBox(
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height * 100,
-            child: Column(
-              // mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 15.0, top: 5),
+        actions: [
+          SizedBox(width: 20, height: 20, child: SvgPicture.asset('assets/svg/add.svg')),
+          const SizedBox(width: 20),
+          SizedBox(width: 20, height: 20, child: SvgPicture.asset('assets/image/menu-burger.svg')),
+          const SizedBox(width: 20),
+        ],
+      ),
+      body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: SizedBox(
+          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.of(context).size.height * 1.7,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 15.0, top: 5),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    //! Avatar
+                    GestureDetector(
+                      onLongPress: () {
+                        avatar.getProfileImage();
+                      },
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          PageTransition(
+                            child: const StoryPage(initialStoryIndex: 0),
+                            type: PageTransitionType.scale,
+                            alignment: const Alignment(-0.75, -0.70),
+                            duration: const Duration(milliseconds: 500),
+                          ),
+                        );
+                      },
+                      child: avatar.profileImage == null || avatar.profileImage!.path.isEmpty
+                          ? Container(
+                              width: 80,
+                              height: 80,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.cyan,
+                                boxShadow: [
+                                  BoxShadow(color: Colors.grey.shade400, blurRadius: 1, spreadRadius: 0.5),
+                                ],
+                                border: Border.all(color: Colors.white, width: 3),
+                              ),
+                            )
+                          : Container(
+                              width: 80,
+                              height: 80,
+                              decoration: BoxDecoration(
+                                image: DecorationImage(fit: BoxFit.cover, image: FileImage(File(avatar.profileImage!.path))),
+                                shape: BoxShape.circle,
+                                color: Colors.cyan,
+                                boxShadow: [
+                                  BoxShadow(color: Colors.grey.shade400, blurRadius: 1, spreadRadius: 0.5),
+                                ],
+                                border: Border.all(color: Colors.white, width: 3),
+                              ),
+                            ),
+                    ),
+                    Expanded(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              //! posts
+                              Text(
+                                MyData.numberPost ?? '200',
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              const SizedBox(height: 3),
+                              const Text(
+                                'Posts',
+                                style: TextStyle(color: Colors.black87),
+                              ),
+                            ],
+                          ),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              //! Followers
+                              Text(
+                                MyData.profileFollower ?? '400K',
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              const SizedBox(height: 3),
+                              const Text(
+                                'Followers',
+                                style: TextStyle(color: Colors.black87),
+                              ),
+                            ],
+                          ),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              //! Following
+                              Text(
+                                MyData.profileFollowing ?? '360K',
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              const SizedBox(height: 3),
+                              const Text(
+                                'Following',
+                                style: TextStyle(color: Colors.black87),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              //! Name
+              Padding(
+                padding: const EdgeInsets.only(left: 15, top: 10),
+                child: Text(
+                  MyData.profileName ?? 'profileName',
+                  style: const TextStyle(fontSize: 15),
+                ),
+              ),
+              //! bio
+              Padding(
+                padding: const EdgeInsets.only(left: 15),
+                child: Text(
+                  MyData.bio ?? 'Bio',
+                  style: const TextStyle(fontSize: 14, height: 1.12),
+                ),
+              ),
+              //! link
+              Padding(
+                padding: const EdgeInsets.only(left: 15),
+                child: Row(
+                  children: [
+                    Transform.rotate(angle: 2, child: const Icon(Icons.link, size: 20, color: Color.fromARGB(255, 19, 107, 180))),
+                    Text(
+                      dataProvider.linkProfile,
+                      style: const TextStyle(
+                        color: Color.fromARGB(255, 19, 107, 180),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              //! pro dashboard
+              Padding(
+                padding: const EdgeInsets.only(left: 15, right: 15, top: 14),
+                child: Container(
+                  height: size.height * 0.08,
+                  decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(10)),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      //! Avatar
-                      GestureDetector(
-                        onLongPress: () {
-                          avatar.getProfileImage();
-                        },
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            PageTransition(
-                              child: const StoryPage(initialStoryIndex: 0),
-                              type: PageTransitionType.scale,
-                              alignment: const Alignment(-0.75, -0.70),
-                              duration: const Duration(milliseconds: 500),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                        child: Column(
+                          children: const [
+                            Text(
+                              'Professional dashboard',
+                              style: TextStyle(fontWeight: FontWeight.bold),
                             ),
-                          );
-                        },
-                        child: avatar.profileImage == null || avatar.profileImage!.path.isEmpty
-                            ? Container(
-                                width: 80,
-                                height: 80,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.cyan,
-                                  boxShadow: [
-                                    BoxShadow(color: Colors.grey.shade400, blurRadius: 1, spreadRadius: 0.5),
-                                  ],
-                                  border: Border.all(color: Colors.white, width: 3),
-                                ),
-                              )
-                            : Container(
-                                width: 80,
-                                height: 80,
-                                decoration: BoxDecoration(
-                                  image: DecorationImage(fit: BoxFit.cover, image: FileImage(File(avatar.profileImage!.path))),
-                                  shape: BoxShape.circle,
-                                  color: Colors.cyan,
-                                  boxShadow: [
-                                    BoxShadow(color: Colors.grey.shade400, blurRadius: 1, spreadRadius: 0.5),
-                                  ],
-                                  border: Border.all(color: Colors.white, width: 3),
-                                ),
-                              ),
-                      ),
-                      Expanded(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                //! posts
-                                Text(
-                                  MyData.numberPost ?? '200',
-                                  style: const TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                                const SizedBox(height: 3),
-                                const Text(
-                                  'Posts',
-                                  style: TextStyle(color: Colors.black87),
-                                ),
-                              ],
-                            ),
-                            Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                //! Followers
-                                Text(
-                                  MyData.profileFollower ?? '400K',
-                                  style: const TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                                const SizedBox(height: 3),
-                                const Text(
-                                  'Followers',
-                                  style: TextStyle(color: Colors.black87),
-                                ),
-                              ],
-                            ),
-                            Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                //! Following
-                                Text(
-                                  MyData.profileFollowing ?? '360K',
-                                  style: const TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                                const SizedBox(height: 3),
-                                const Text(
-                                  'Following',
-                                  style: TextStyle(color: Colors.black87),
-                                ),
-                              ],
+                            Text(
+                              'New tools are now available.',
+                              style: TextStyle(fontSize: 12, color: Colors.grey),
                             ),
                           ],
                         ),
                       ),
-                    ],
-                  ),
-                ),
-                //! Name
-                Padding(
-                  padding: const EdgeInsets.only(left: 15, top: 10),
-                  child: Text(
-                    MyData.profileName ?? 'profileName',
-                    style: const TextStyle(fontSize: 15),
-                  ),
-                ),
-                //! bio
-                Padding(
-                  padding: const EdgeInsets.only(left: 15),
-                  child: Text(
-                    MyData.bio ?? 'Bio',
-                    style: const TextStyle(fontSize: 14, height: 1.12),
-                  ),
-                ),
-                //! link
-                Padding(
-                  padding: const EdgeInsets.only(left: 15),
-                  child: Row(
-                    children: [
-                      Transform.rotate(angle: 2, child: const Icon(Icons.link, size: 20, color: Color.fromARGB(255, 19, 107, 180))),
-                      Text(
-                        dataProvider.linkProfile,
-                        style: const TextStyle(
-                          color: Color.fromARGB(255, 19, 107, 180),
-                          fontWeight: FontWeight.w500,
+                      Container(
+                        margin: const EdgeInsets.only(right: 20),
+                        height: 8,
+                        width: 8,
+                        decoration: const BoxDecoration(
+                          color: Colors.blue,
+                          shape: BoxShape.circle,
                         ),
                       ),
                     ],
                   ),
                 ),
-                //! pro dashboard
-                Padding(
-                  padding: const EdgeInsets.only(left: 15, right: 15, top: 14),
-                  child: Container(
-                    height: size.height * 0.08,
-                    decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(10)),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                          child: Column(
-                            children: const [
-                              Text(
-                                'Professional dashboard',
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              Text(
-                                'New tools are now available.',
-                                style: TextStyle(fontSize: 12, color: Colors.grey),
-                              ),
-                            ],
-                          ),
+              ),
+              //! Buttons
+              Padding(
+                padding: const EdgeInsets.only(left: 15, right: 15, top: 10),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        alignment: Alignment.center,
+                        padding: const EdgeInsets.symmetric(vertical: 7),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          color: Colors.grey.shade200,
                         ),
-                        Container(
-                          margin: const EdgeInsets.only(right: 20),
-                          height: 8,
-                          width: 8,
-                          decoration: const BoxDecoration(
-                            color: Colors.blue,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                //! Buttons
-                Padding(
-                  padding: const EdgeInsets.only(left: 15, right: 15, top: 10),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          alignment: Alignment.center,
-                          padding: const EdgeInsets.symmetric(vertical: 7),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            color: Colors.grey.shade200,
-                          ),
-                          child: const Text(
-                            'Edit profile',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15,
-                            ),
+                        child: const Text(
+                          'Edit profile',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 7),
-                      Expanded(
-                        child: Container(
-                          alignment: Alignment.center,
-                          padding: const EdgeInsets.symmetric(vertical: 7),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            color: Colors.grey.shade200,
-                          ),
-                          child: const Text(
-                            'Share profile',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15,
-                            ),
+                    ),
+                    const SizedBox(width: 7),
+                    Expanded(
+                      child: Container(
+                        alignment: Alignment.center,
+                        padding: const EdgeInsets.symmetric(vertical: 7),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          color: Colors.grey.shade200,
+                        ),
+                        child: const Text(
+                          'Share profile',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                ),
-                //! Hilight
-                hilight(),
-                //! Tab Bar
-                TabBar(
-                  onTap: (index) {
-                    setState(() {
-                      tabBarIndex = index;
-                    });
-                  },
-                  unselectedLabelColor: Colors.grey,
-                  tabs: [
-                    Tab(
-                      icon: SizedBox(width: 25, height: 25, child: SvgPicture.asset('assets/svg/grid_main.svg', color: tabBarIndex != 0 ? Colors.grey : null)),
-                    ),
-                    Tab(
-                      icon: SizedBox(width: 24, height: 24, child: SvgPicture.asset('assets/svg/reel.svg', color: tabBarIndex != 1 ? Colors.grey : null)),
-                    ),
-                    Tab(
-                      icon: SizedBox(width: 20, height: 20, child: SvgPicture.asset('assets/image/portrait.svg', color: tabBarIndex != 2 ? Colors.grey : null)),
                     ),
                   ],
                 ),
+              ),
+              //! Hilight
+              hilight(),
+              //! Tab Bar
 
-                Flexible(
-                  child: TabBarView(
-                    children: [
-                      const AccountTab1(),
-                      AccountTab2(),
-                      AccountTab3(),
-                    ],
+              TabBar(
+                controller: _tabController,
+                onTap: (index) {
+                  setState(() {
+                    tabBarIndex = index;
+                  });
+                },
+                tabs: [
+                  Tab(
+                    icon: SizedBox(
+                        width: 25,
+                        height: 25,
+                        child: SvgPicture.asset(
+                          'assets/svg/grid_main.svg',
+                          color: _tabController.index != 0 ? Colors.grey : null,
+                        )),
                   ),
+                  Tab(
+                    icon: SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: SvgPicture.asset(
+                          'assets/svg/reel.svg',
+                          color: _tabController.index != 1 ? Colors.grey : null,
+                        )),
+                  ),
+                  Tab(
+                    icon: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: SvgPicture.asset(
+                          'assets/image/portrait.svg',
+                          color: _tabController.index != 2 ? Colors.grey : null,
+                        )),
+                  ),
+                ],
+              ),
+
+              Flexible(
+                fit: FlexFit.loose,
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    const AccountTab1(),
+                    AccountTab2(),
+                    AccountTab3(),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

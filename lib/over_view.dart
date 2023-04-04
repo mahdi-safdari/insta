@@ -435,23 +435,23 @@ class _OverViewState extends State<OverView> {
                       ),
                       //! tag 1
                       Visibility(
-                        visible: dataProvider.tap1 != 0,
+                        visible: dataStory.tap1[widget.dataIndex] != 0,
                         child: Padding(
                           padding: const EdgeInsets.only(left: 20, top: 30),
                           child: TextAndNumber(
                             text: '@${dataStory.nameTap1[widget.dataIndex]}',
-                            number: formatter.format(dataProvider.tap1),
+                            number: formatter.format(dataStory.tap1[widget.dataIndex]),
                           ),
                         ),
                       ),
                       //! tag 2
                       Visibility(
-                        visible: dataProvider.tap2 != 0,
+                        visible: dataStory.tap2[widget.dataIndex] != 0,
                         child: Padding(
                           padding: const EdgeInsets.only(left: 20, top: 30),
                           child: TextAndNumber(
                             text: '@${dataStory.nameTap2[widget.dataIndex]}',
-                            number: formatter.format(dataProvider.tap2),
+                            number: formatter.format(dataStory.tap2[widget.dataIndex]),
                           ),
                         ),
                       ),
@@ -462,7 +462,7 @@ class _OverViewState extends State<OverView> {
                           padding: const EdgeInsets.only(left: 20, top: 30),
                           child: TextAndNumber(
                             text: '@${dataStory.nameTap3[widget.dataIndex]}',
-                            number: formatter.format(dataProvider.tap3),
+                            number: formatter.format(dataStory.tap3[widget.dataIndex]),
                           ),
                         ),
                       ),

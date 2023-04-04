@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:instagram/my_data.dart';
 import 'package:instagram/over_view.dart';
 import 'package:instagram/providers/avatar_provider.dart';
+import 'package:instagram/providers/data_provider.dart';
 import 'package:instagram/providers/story_data_provider.dart';
 import 'package:instagram/providers/story_images_provider.dart';
 import 'package:instagram/providers/story_number_provider.dart';
@@ -378,155 +379,132 @@ class DetailStory extends StatefulWidget {
   State<DetailStory> createState() => _DetailStoryState();
 }
 
-class _DetailStoryState extends State<DetailStory> with TickerProviderStateMixin {
-  getData() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      MyData.userName = prefs.getString('userName') ?? 'userName';
-      MyData.profileName = prefs.getString('profileName') ?? 'profileName';
-      MyData.numberPost = prefs.getString('numberPost') ?? '99';
-      MyData.profileFollower = prefs.getString('profileFollower') ?? '999';
-      MyData.profileFollowing = prefs.getString('profileFollowing') ?? '9K';
-      MyData.bio = prefs.getString('bio') ?? 'Bio';
-      MyData.view = prefs.getString('view') ?? '9K';
-      MyData.reach = prefs.getString('reach') ?? '200';
-      MyData.engaged = prefs.getString('engaged') ?? '--';
-      MyData.profileActivity = prefs.getString('profileActivity') ?? '0';
-      MyData.impression = prefs.getString('impression') ?? '9';
-      MyData.intraction = prefs.getString('intraction') ?? '19';
-      MyData.shares = prefs.getString('shares') ?? '36';
-      MyData.replies = prefs.getString('replies') ?? '20';
-      MyData.navigation = prefs.getString('navigation') ?? '100';
-      MyData.forward = prefs.getString('forward') ?? '360';
-      MyData.exited = prefs.getString('exited') ?? '6';
-      MyData.nextStory = prefs.getString('nextStory') ?? '33';
-      MyData.back = prefs.getString('back') ?? '2';
-      MyData.profileVisit = prefs.getString('profileVisit') ?? '19';
-      MyData.follows = prefs.getString('profileActivity') ?? '39';
-    });
-  }
+class _DetailStoryState extends State<DetailStory> {
+  final Color tabBarColor = const Color(0xff3897f0);
 
-  late TabController _controller;
   @override
   void initState() {
-    getData();
     super.initState();
-    _controller = TabController(length: 2, vsync: this, initialIndex: tabBarIndex);
   }
 
-  final Color tabBarColor = const Color(0xff3897f0);
-  int tabBarIndex = 0;
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
     final data = Provider.of<StoryDataProvider>(context);
+    final dataProvider = Provider.of<DataProvider>(context);
 
     final formatter = NumberFormat('#,###');
 
-    return Column(
-      children: [
-        Container(
-          height: 45,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(color: Colors.grey.shade200, offset: Offset.zero, blurRadius: 20, spreadRadius: 3),
-            ],
-          ),
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 45),
-                child: Divider(color: Colors.grey.shade400),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  SizedBox(
-                    width: 150,
-                    // height: 60,
-                    //! Tab Bar
-                    child: TabBar(
-                      controller: _controller,
-                      labelColor: tabBarColor,
-                      indicatorColor: tabBarColor,
-                      dragStartBehavior: DragStartBehavior.down,
-                      onTap: (int index) {
-                        setState(() {
-                          tabBarIndex = index;
-                        });
-                      },
-                      indicatorWeight: 1.5,
-                      labelPadding: const EdgeInsets.only(left: 5),
-                      tabs: [
-                        SizedBox(
-                          width: 100,
-                          child: Tab(
-                            // height: 60,
-                            icon: SizedBox(
-                              width: 40,
-                              height: 40,
-                              child: RotatedBox(
-                                quarterTurns: 0,
-                                child: SvgPicture.asset(
-                                  'assets/svg/line.svg',
-                                  color: tabBarIndex == 0 ? tabBarColor : null,
+    return DefaultTabController(
+      length: 2,
+      initialIndex: dataProvider.indexTabBar,
+      child: Column(
+        children: [
+          Container(
+            height: 45,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(color: Colors.grey.shade200, offset: Offset.zero, blurRadius: 20, spreadRadius: 3),
+              ],
+            ),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 45),
+                  child: Divider(color: Colors.grey.shade400),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    SizedBox(
+                      width: 150,
+
+                      //! Tab Bar
+                      child: TabBar(
+                        labelColor: tabBarColor,
+                        indicatorColor: tabBarColor,
+                        dragStartBehavior: DragStartBehavior.down,
+                        onTap: (int index) async {
+                          final prefs = await SharedPreferences.getInstance();
+                          setState(() {
+                            dataProvider.indexTabBar = index;
+                          });
+                        },
+                        indicatorWeight: 1.5,
+                        labelPadding: const EdgeInsets.only(left: 5),
+                        tabs: [
+                          SizedBox(
+                            width: 100,
+                            child: Tab(
+                              icon: SizedBox(
+                                width: 40,
+                                height: 40,
+                                child: RotatedBox(
+                                  quarterTurns: 0,
+                                  child: SvgPicture.asset(
+                                    'assets/svg/line.svg',
+                                    color: dataProvider.indexTabBar == 0 ? tabBarColor : null,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                        SizedBox(
-                          width: 100,
-                          child: Tab(
-                            // height: 60,
-                            icon: Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                SizedBox(
-                                    width: 11,
-                                    height: 11,
-                                    child: SvgPicture.asset(
-                                      'assets/svg/view.svg',
-                                      color: tabBarIndex == 1 ? tabBarColor : null,
-                                    )),
-                                const SizedBox(width: 4),
-                                Text(formatter.format(data.viewStory[widget.dataIndex]), style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: tabBarIndex == 1 ? tabBarColor : Colors.black)),
-                              ],
+                          SizedBox(
+                            width: 100,
+                            child: Tab(
+                              icon: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                      width: 11,
+                                      height: 11,
+                                      child: SvgPicture.asset(
+                                        'assets/svg/view.svg',
+                                        color: dataProvider.indexTabBar == 1 ? tabBarColor : null,
+                                      )),
+                                  const SizedBox(width: 4),
+                                  Text(formatter.format(data.viewStory[widget.dataIndex]), style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: dataProvider.indexTabBar == 1 ? tabBarColor : Colors.black)),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
+                        ],
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        SizedBox(width: 25, height: 25, child: SvgPicture.asset('assets/svg/download.svg')),
+                        const SizedBox(width: 20),
+                        SizedBox(width: 24, height: 24, child: SvgPicture.asset('assets/image/upload1.svg')),
+                        const SizedBox(width: 20),
+                        SizedBox(width: 24, height: 24, child: SvgPicture.asset('assets/image/trash.svg')),
+                        const SizedBox(width: 20),
                       ],
                     ),
-                  ),
-                  Row(
-                    children: [
-                      SizedBox(width: 25, height: 25, child: SvgPicture.asset('assets/svg/download.svg')),
-                      const SizedBox(width: 20),
-                      SizedBox(width: 24, height: 24, child: SvgPicture.asset('assets/image/upload1.svg')),
-                      const SizedBox(width: 20),
-                      SizedBox(width: 24, height: 24, child: SvgPicture.asset('assets/image/trash.svg')),
-                      const SizedBox(width: 20),
-                    ],
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
-        Expanded(
-          child: TabBarView(
-            controller: _controller,
-            physics: NeverScrollableScrollPhysics(),
-            children: [
-              OverView(dataIndex: widget.dataIndex),
-              UserView(),
-            ],
+          Expanded(
+            child: TabBarView(
+              physics: const NeverScrollableScrollPhysics(),
+              children: [
+                OverView(dataIndex: widget.dataIndex),
+                UserView(),
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

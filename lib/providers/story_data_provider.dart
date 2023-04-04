@@ -266,7 +266,7 @@ class StoryDataProvider extends ChangeNotifier {
 
   saveExited({required int value, required int index}) {
     String key = '${exitedKey}_$index';
-    forward[index] = value;
+    exited[index] = value;
     _prefs.setInt(key, value);
     notifyListeners();
   }
