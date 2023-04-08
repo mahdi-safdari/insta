@@ -54,102 +54,126 @@ class _StoryPageState extends State<StoryPage> {
   Widget build(BuildContext context) {
     final avatar = Provider.of<AvatarProvider>(context);
     final storyCount = Provider.of<StoryNumberProvider>(context);
+    final Size size = MediaQuery.of(context).size;
     return Scaffold(
+      backgroundColor: Colors.black87,
       body: Stack(
         children: [
-          StoryPageView(
-            initialStoryIndex: (pageIndex) {
-              return widget.initialStoryIndex;
-            },
-            backgroundColor: Colors.black,
-            indicatorHeight: 1.5,
-            indicatorDuration: const Duration(seconds: 15),
-            indicatorPadding: const EdgeInsets.symmetric(vertical: 32, horizontal: 8),
-            onPageChanged: (int index) {
-              setState(() {
-                storyIndex = index;
-              });
-            },
-            itemBuilder: (context, pageIndex, storyIndex) {
-              return Stack(
-                children: [
-                  //! Background
-                  Hero(
-                    tag: storyIndex,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        image: listLocalImageStory[storyIndex] != null
-                            ? DecorationImage(
-                                fit: BoxFit.cover,
-                                image: FileImage(
-                                  File(listLocalImageStory[storyIndex]!.path),
-                                ),
-                              )
-                            : const DecorationImage(
-                                fit: BoxFit.cover,
-                                image: AssetImage('assets/image/1.jpg'),
-                              ),
-                      ),
-                    ),
-                  ),
-                  //! Name & Avatar
-                  Padding(
-                    padding: const EdgeInsets.only(top: 44, left: 8),
-                    child: Row(
-                      children: [
-                        avatar.profileImage == null || avatar.profileImage!.path.isEmpty
-                            ? Container(
-                                height: 32,
-                                width: 32,
-                                decoration: const BoxDecoration(
-                                  color: Colors.pink,
-                                  shape: BoxShape.circle,
-                                ),
-                              )
-                            : Container(
-                                height: 32,
-                                width: 32,
-                                decoration: BoxDecoration(
-                                  image: DecorationImage(
-                                    image: FileImage(File(avatar.profileImage!.path)),
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: StoryPageView(
+              initialStoryIndex: (pageIndex) {
+                return widget.initialStoryIndex;
+              },
+              backgroundColor: Colors.black,
+              indicatorHeight: 1.5,
+              indicatorDuration: const Duration(seconds: 15),
+              indicatorPadding: const EdgeInsets.symmetric(vertical: 32, horizontal: 8),
+              onPageChanged: (int index) {
+                setState(() {
+                  storyIndex = index;
+                });
+              },
+              itemBuilder: (context, pageIndex, storyIndex) {
+                return Container(
+                  color: Colors.black,
+                  child: Stack(
+                    children: [
+                      //! Background
+                      Hero(
+                        tag: storyIndex,
+                        child: Container(
+                          margin: const EdgeInsets.only(top: 20),
+                          height: size.height * 0.875,
+                          decoration: BoxDecoration(
+                            color: Colors.black,
+                            borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(16), bottomRight: Radius.circular(16)),
+                            image: listLocalImageStory[storyIndex] != null
+                                ? DecorationImage(
                                     fit: BoxFit.cover,
+                                    image: FileImage(
+                                      File(listLocalImageStory[storyIndex]!.path),
+                                    ),
+                                  )
+                                : const DecorationImage(
+                                    fit: BoxFit.cover,
+                                    image: AssetImage('assets/image/1.jpg'),
                                   ),
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                        const SizedBox(width: 8),
-                        Text(
-                          MyData.userName ?? "userName",
-                          style: const TextStyle(
-                            fontSize: 15,
-                            color: Colors.white,
-                            fontWeight: FontWeight.w500,
-                            shadows: [
-                              Shadow(
-                                color: Colors.black,
-                                blurRadius: 2,
-                              ),
-                            ],
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        const Text(
-                          '47m',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey,
+                      ),
+                      Container(
+                        height: 30,
+                        decoration: BoxDecoration(color: Colors.transparent, boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.3),
+                            blurRadius: 100,
+                            spreadRadius: 30,
+                            offset: const Offset(0, 10),
                           ),
+                        ]),
+                      ),
+
+                      //! Name & Avatar
+                      Padding(
+                        padding: const EdgeInsets.only(top: 44, left: 8),
+                        child: Row(
+                          children: [
+                            avatar.profileImage == null || avatar.profileImage!.path.isEmpty
+                                ? Container(
+                                    height: 32,
+                                    width: 32,
+                                    decoration: const BoxDecoration(
+                                      color: Colors.pink,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  )
+                                : Container(
+                                    height: 32,
+                                    width: 32,
+                                    decoration: BoxDecoration(
+                                      image: DecorationImage(
+                                        image: FileImage(File(avatar.profileImage!.path)),
+                                        fit: BoxFit.cover,
+                                      ),
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                            const SizedBox(width: 8),
+                            Text(
+                              MyData.userName ?? "userName",
+                              style: const TextStyle(
+                                fontSize: 15,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w500,
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.grey,
+                                    blurRadius: 2,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            const Text(
+                              '47m',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
-              );
-            },
-            storyLength: (int pageIndex) {
-              return storyCount.number;
-            },
-            pageLength: 1,
+                );
+              },
+              storyLength: (int pageIndex) {
+                return storyCount.number;
+              },
+              pageLength: 1,
+            ),
           ),
           Positioned(
             bottom: 0,

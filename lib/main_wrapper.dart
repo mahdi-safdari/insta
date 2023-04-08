@@ -5,7 +5,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:instagram/my_data.dart';
 import 'package:instagram/get_data.dart';
 import 'package:instagram/home_page.dart';
-import 'package:instagram/icon/uicons.dart';
 import 'package:instagram/providers/avatar_provider.dart';
 import 'package:provider/provider.dart';
 

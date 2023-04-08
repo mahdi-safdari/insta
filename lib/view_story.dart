@@ -26,57 +26,13 @@ class ViewStory extends StatefulWidget {
   State<ViewStory> createState() => _ViewStoryState();
 }
 
-class _ViewStoryState extends State<ViewStory> with TickerProviderStateMixin {
-  // late AnimationController _controller;
-  // late Animation<double> _animation;
-  // late CurvedAnimation _curvedAnimation;
+class _ViewStoryState extends State<ViewStory> {
   PageController pageController1 = PageController(viewportFraction: 0.19, initialPage: 0);
   PageController pageController2 = PageController(initialPage: 0);
   var currentPageValue = 0.0;
-  // final List<File?> listLocalImageStory = List.generate(100, (index) => null);
-  getData() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      MyData.userName = prefs.getString('userName') ?? 'userName';
-      MyData.profileName = prefs.getString('profileName') ?? 'profileName';
-      MyData.numberPost = prefs.getString('numberPost') ?? '99';
-      MyData.profileFollower = prefs.getString('profileFollower') ?? '999';
-      MyData.profileFollowing = prefs.getString('profileFollowing') ?? '9K';
-      MyData.bio = prefs.getString('bio') ?? 'Bio';
-      MyData.view = prefs.getString('view') ?? '9K';
-      MyData.reach = prefs.getString('reach') ?? '200';
-      MyData.engaged = prefs.getString('engaged') ?? '--';
-      MyData.profileActivity = prefs.getString('profileActivity') ?? '0';
-      MyData.impression = prefs.getString('impression') ?? '9';
-      MyData.intraction = prefs.getString('intraction') ?? '19';
-      MyData.shares = prefs.getString('shares') ?? '36';
-      MyData.replies = prefs.getString('replies') ?? '20';
-      MyData.navigation = prefs.getString('navigation') ?? '100';
-      MyData.forward = prefs.getString('forward') ?? '360';
-      MyData.exited = prefs.getString('exited') ?? '6';
-      MyData.nextStory = prefs.getString('nextStory') ?? '33';
-      MyData.back = prefs.getString('back') ?? '2';
-      MyData.profileVisit = prefs.getString('profileVisit') ?? '19';
-      MyData.follows = prefs.getString('profileActivity') ?? '39';
-    });
-  }
-
-  // getDataStory() async {
-  //   final prefs = await SharedPreferences.getInstance();
-  //   setState(() {
-  //     for (var i = 0; i < 100; i++) {
-  //       final key = 'image_story_$i';
-  //       if (prefs.containsKey(key)) {
-  //         listLocalImageStory[i] = File(prefs.getString(key)!);
-  //       }
-  //     }
-  //   });
-  // }
 
   @override
   void initState() {
-    // getDataStory();
-    getData();
     super.initState();
 
     pageController1.addListener(() {
@@ -84,17 +40,12 @@ class _ViewStoryState extends State<ViewStory> with TickerProviderStateMixin {
         currentPageValue = pageController1.page!;
       });
     });
-    // _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 0));
-    // _curvedAnimation = CurvedAnimation(parent: _controller, curve: Curves.linear);
-    // _animation = Tween<double>(begin: 0.0, end: 1.0).animate(_curvedAnimation);
-    // _controller.forward();
   }
 
   @override
   void dispose() {
     pageController1.dispose();
     pageController2.dispose();
-    // _controller.dispose();
 
     super.dispose();
   }
@@ -105,7 +56,6 @@ class _ViewStoryState extends State<ViewStory> with TickerProviderStateMixin {
     final storyNumber = Provider.of<StoryNumberProvider>(context);
     final avatar = Provider.of<AvatarProvider>(context);
     final storyProvider = Provider.of<StoryImagesProvider>(context);
-    final formatter = NumberFormat('#,###');
 
     return Scaffold(
       //! App Bar
@@ -225,13 +175,26 @@ class _ViewStoryState extends State<ViewStory> with TickerProviderStateMixin {
                                           boxShadow: currentPageValue == position
                                               ? [
                                                   BoxShadow(
+                                                    offset: const Offset(0, -10),
+                                                    blurRadius: 30,
+                                                    spreadRadius: 1,
+                                                    color: Colors.black87.withOpacity(0.03),
+                                                  ),
+                                                  BoxShadow(
                                                     offset: const Offset(0, 100),
                                                     blurRadius: 30,
                                                     spreadRadius: 1,
                                                     color: Colors.black87.withOpacity(0.03),
                                                   )
                                                 ]
-                                              : null,
+                                              : [
+                                                  BoxShadow(
+                                                    offset: const Offset(0, -10),
+                                                    blurRadius: 30,
+                                                    spreadRadius: 1,
+                                                    color: Colors.black87.withOpacity(0.03),
+                                                  )
+                                                ],
                                         ),
                                       ),
                                       //! view Story
@@ -249,15 +212,15 @@ class _ViewStoryState extends State<ViewStory> with TickerProviderStateMixin {
                                               const SizedBox(width: 3),
                                               Consumer<StoryDataProvider>(builder: (context, data, child) {
                                                 return Text(
-                                                  formatter.format(data.viewStory[position]),
+                                                  data.viewStory[position].toString(),
                                                   style: const TextStyle(
                                                     fontWeight: FontWeight.bold,
                                                     fontSize: 13.8,
                                                     color: Colors.white,
                                                     shadows: [
                                                       Shadow(
-                                                        color: Colors.black,
-                                                        blurRadius: 2,
+                                                        color: Colors.grey,
+                                                        blurRadius: 10,
                                                       ),
                                                     ],
                                                   ),
@@ -399,6 +362,12 @@ class _DetailStoryState extends State<DetailStory> {
     final dataProvider = Provider.of<DataProvider>(context);
 
     final formatter = NumberFormat('#,###');
+    String view;
+    if (data.viewStory[widget.dataIndex] < 10000) {
+      view = formatter.format(data.viewStory[widget.dataIndex]);
+    } else {
+      view = NumberFormat.compact().format(data.viewStory[widget.dataIndex]).replaceAll('k', 'K');
+    }
 
     return DefaultTabController(
       length: 2,
@@ -471,7 +440,7 @@ class _DetailStoryState extends State<DetailStory> {
                                         color: dataProvider.indexTabBar == 1 ? tabBarColor : null,
                                       )),
                                   const SizedBox(width: 4),
-                                  Text(formatter.format(data.viewStory[widget.dataIndex]), style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: dataProvider.indexTabBar == 1 ? tabBarColor : Colors.black)),
+                                  Text(view, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: dataProvider.indexTabBar == 1 ? tabBarColor : Colors.black)),
                                 ],
                               ),
                             ),

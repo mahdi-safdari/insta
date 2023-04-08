@@ -1,15 +1,12 @@
 import 'dart:io';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:instagram/my_data.dart';
 import 'package:instagram/providers/data_provider.dart';
 import 'package:instagram/providers/slider_provider.dart';
 import 'package:instagram/providers/story_data_provider.dart';
 import 'package:instagram/providers/story_images_provider.dart';
 import 'package:instagram/providers/story_number_provider.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -85,46 +82,6 @@ class _GetDataState extends State<GetData> {
     });
   }
 
-  //! --------------------------------------------------------------------------------------
-  // Future<void> saveDataStory({required int index, required String imagePath}) async {
-  //   final prefs = await SharedPreferences.getInstance();
-  //   final key = 'image_story_$index';
-  //   prefs.setString(key, imagePath);
-  // }
-
-  // final List<File?> listLocalImageStory = List.generate(1000, (_) => null);
-  // final ImagePicker _picker = ImagePicker();
-  // getImageStory(int index) async {
-  //   XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-  //   final Directory tempDir = await getApplicationDocumentsDirectory();
-
-  //   if (image != null && index >= 0) {
-  //     final String fileName = '${DateTime.now().millisecondsSinceEpoch}_${index * pi}.png';
-  //     final File localImage = await File('${tempDir.path}/$fileName').create();
-  //     final byteData = await image.readAsBytes();
-  //     final bytes = byteData.buffer.asUint8List();
-  //     await localImage.writeAsBytes(bytes);
-
-  //     setState(() {
-  //       listLocalImageStory[index] = localImage;
-  //       saveDataStory(index: index, imagePath: localImage.path);
-  //     });
-  //   }
-  // }
-
-  // getDataStory() async {
-  //   final prefs = await SharedPreferences.getInstance();
-  //   setState(() {
-  //     for (var i = 0; i < 1000; i++) {
-  //       final key = 'image_story_$i';
-  //       if (prefs.containsKey(key)) {
-  //         listLocalImageStory[i] = File(prefs.getString(key)!);
-  //       }
-  //     }
-  //   });
-  // }
-
-  //! --------------------------------------------------------------------------------------
   @override
   void initState() {
     getData();
@@ -139,7 +96,7 @@ class _GetDataState extends State<GetData> {
     final storyNumber = Provider.of<StoryNumberProvider>(context);
     final slider = Provider.of<SliderProvider>(context, listen: false);
     final grid = Provider.of<StoryNumberProvider>(context, listen: false);
-    final dataProvider = Provider.of<DataProvider>(context, listen: false);
+    final dataProvider = Provider.of<DataProvider>(context);
     final storyProvider = Provider.of<StoryImagesProvider>(context);
     final data = Provider.of<StoryDataProvider>(context);
 
@@ -249,6 +206,18 @@ class _GetDataState extends State<GetData> {
                           },
                         ),
                       ],
+                    ),
+                    textField(
+                      width: 300,
+                      counterText: dataProvider.textProfile,
+                      hintText: 'text dashboard',
+                      onChanged: (String text) {
+                        setState(() {
+                          if (text.isNotEmpty) {
+                            dataProvider.textProfile = text;
+                          }
+                        });
+                      },
                     ),
                     textField(
                       width: 300,
@@ -726,6 +695,50 @@ class _GetDataState extends State<GetData> {
                                   ],
                                 ),
                                 const Divider(color: Colors.black, height: 50),
+
+                                textField(
+                                  width: 150,
+                                  keyboardType: TextInputType.number,
+                                  counterText: data.activity[index].toString(),
+                                  hintText: 'profile Activity',
+                                  onChanged: (String text) {
+                                    setState(() {
+                                      if (text.isNotEmpty) {
+                                        data.saveActivity(value: int.parse(text), index: index);
+                                      }
+                                    });
+                                  },
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  children: [
+                                    textField(
+                                      width: 150,
+                                      keyboardType: TextInputType.number,
+                                      counterText: data.intraction[index].toString(),
+                                      hintText: 'intraction',
+                                      onChanged: (String text) {
+                                        setState(() {
+                                          if (text.isNotEmpty) {
+                                            data.saveIntraction(value: int.parse(text), index: index);
+                                          }
+                                        });
+                                      },
+                                    ),
+                                    textField(
+                                      width: 150,
+                                      keyboardType: TextInputType.number,
+                                      counterText: MyData.navigation,
+                                      hintText: 'navigation',
+                                      onChanged: (String text) {
+                                        setState(() {
+                                          MyData.navigation = text;
+                                          saveData(key: 'navigation', value: text);
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
                               ],
                             ),
                           );
@@ -736,73 +749,6 @@ class _GetDataState extends State<GetData> {
                 ),
               ),
               //! ------------++++--------------++++----------
-              Container(
-                margin: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        textField(
-                          width: 150,
-                          controller: profileActivityController,
-                          counterText: MyData.profileActivity,
-                          hintText: 'profile Activity',
-                          onChanged: (String text) {
-                            setState(() {
-                              MyData.profileActivity = text;
-                              saveData(key: 'profileActivity', value: text);
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        textField(
-                          width: 150,
-                          controller: intractionController,
-                          counterText: MyData.intraction,
-                          hintText: 'intraction',
-                          onChanged: (String text) {
-                            setState(() {
-                              MyData.intraction = text;
-                              saveData(key: 'intraction', value: text);
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        textField(
-                          width: 150,
-                          controller: navigationController,
-                          counterText: MyData.navigation,
-                          hintText: 'navigation',
-                          onChanged: (String text) {
-                            setState(() {
-                              MyData.navigation = text;
-                              saveData(key: 'navigation', value: text);
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [],
-                    ),
-                  ],
-                ),
-              ),
             ],
           ),
         ),

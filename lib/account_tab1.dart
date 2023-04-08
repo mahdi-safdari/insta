@@ -63,38 +63,35 @@ class _AccountTab1State extends State<AccountTab1> {
   @override
   Widget build(BuildContext context) {
     final grid = Provider.of<StoryNumberProvider>(context);
-    return Expanded(
-      child: GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: grid.grid,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3),
-        itemBuilder: (BuildContext context, int index) {
-          return Padding(
-            padding: const EdgeInsets.all(1.5),
-            child: GestureDetector(
-              onLongPress: () {
-                getImagePost(index);
-              },
-              child: listLocalImages[index] != null
-                  ? Container(
-                      decoration: BoxDecoration(
-                        color: Colors.blue[100],
-                        image: DecorationImage(
-                          fit: BoxFit.cover,
-                          image: FileImage(File(listLocalImages[index]!.path)),
-                        ),
-                      ),
-                    )
-                  : Container(
-                      decoration: BoxDecoration(
-                        color: Colors.blue[100],
+    return GridView.builder(
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: grid.grid,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3),
+      itemBuilder: (BuildContext context, int index) {
+        return Padding(
+          padding: const EdgeInsets.all(1.5),
+          child: GestureDetector(
+            onLongPress: () {
+              getImagePost(index);
+            },
+            child: listLocalImages[index] != null
+                ? Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade200,
+                      image: DecorationImage(
+                        fit: BoxFit.cover,
+                        image: FileImage(File(listLocalImages[index]!.path)),
                       ),
                     ),
-            ),
-          );
-        },
-      ),
+                  )
+                : Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade200,
+                    ),
+                  ),
+          ),
+        );
+      },
     );
   }
 }

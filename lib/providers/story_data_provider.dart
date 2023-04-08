@@ -27,6 +27,9 @@ class StoryDataProvider extends ChangeNotifier {
   static const String backKey = "back";
   static const String profileVisitKey = "profileVisit";
   static const String followsKey = "follows";
+  static const String activityKey = "activity";
+  static const String intractionKey = "intraction";
+  static const String navigationKey = "navigation";
 
   List<int> viewStory = List.generate(100, (index) => 0);
   List<int> reach = List.generate(100, (index) => 0);
@@ -50,6 +53,9 @@ class StoryDataProvider extends ChangeNotifier {
   List<int> back = List.generate(100, (index) => 0);
   List<int> profileVisit = List.generate(100, (index) => 0);
   List<int> follows = List.generate(100, (index) => 0);
+  List<int> activity = List.generate(100, (index) => 0);
+  List<int> intraction = List.generate(100, (index) => 0);
+  List<int> navigation = List.generate(100, (index) => 0);
 
   Future<void> getData() async {
     for (int i = 0; i < 100; i++) {
@@ -139,6 +145,15 @@ class StoryDataProvider extends ChangeNotifier {
 
       if (_prefs.containsKey('${followsKey}_$i')) {
         follows[i] = _prefs.getInt('${followsKey}_$i') ?? 0;
+      }
+      if (_prefs.containsKey('${activityKey}_$i')) {
+        activity[i] = _prefs.getInt('${activityKey}_$i') ?? 0;
+      }
+      if (_prefs.containsKey('${intractionKey}_$i')) {
+        intraction[i] = _prefs.getInt('${intractionKey}_$i') ?? 0;
+      }
+      if (_prefs.containsKey('${navigationKey}_$i')) {
+        navigation[i] = _prefs.getInt('${navigationKey}_$i') ?? 0;
       }
     }
 
@@ -295,6 +310,27 @@ class StoryDataProvider extends ChangeNotifier {
   saveFollows({required int value, required int index}) {
     String key = '${followsKey}_$index';
     follows[index] = value;
+    _prefs.setInt(key, value);
+    notifyListeners();
+  }
+
+  saveActivity({required int value, required int index}) {
+    String key = '${activityKey}_$index';
+    activity[index] = value;
+    _prefs.setInt(key, value);
+    notifyListeners();
+  }
+
+  saveIntraction({required int value, required int index}) {
+    String key = '${intractionKey}_$index';
+    intraction[index] = value;
+    _prefs.setInt(key, value);
+    notifyListeners();
+  }
+
+  saveNavigation({required int value, required int index}) {
+    String key = '${navigationKey}_$index';
+    navigation[index] = value;
     _prefs.setInt(key, value);
     notifyListeners();
   }

@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:instagram/account_tab1.dart';
 import 'package:instagram/account_tab2.dart';
 import 'package:instagram/account_tab3.dart';
+import 'package:instagram/icon/uicons.dart';
 import 'package:instagram/my_data.dart';
 import 'package:instagram/providers/avatar_provider.dart';
 import 'package:instagram/providers/data_provider.dart';
@@ -111,9 +112,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin, Auto
           ],
         ),
         actions: [
-          SizedBox(width: 20, height: 20, child: SvgPicture.asset('assets/svg/add.svg')),
+          SizedBox(width: 23, height: 23, child: SvgPicture.asset('assets/svg/add.svg')),
           const SizedBox(width: 20),
-          SizedBox(width: 20, height: 20, child: SvgPicture.asset('assets/image/menu-burger.svg')),
+          SizedBox(width: 23, height: 23, child: SvgPicture.asset('assets/image/menu-burger.svg')),
           const SizedBox(width: 20),
         ],
       ),
@@ -262,11 +263,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin, Auto
                 padding: const EdgeInsets.only(left: 15),
                 child: Row(
                   children: [
-                    Transform.rotate(angle: 2, child: const Icon(Icons.link, size: 20, color: Color.fromARGB(255, 19, 107, 180))),
+                    Transform.rotate(angle: 0, child: const Icon(Uicons.fiRrLink, size: 20, color: Color.fromARGB(255, 9, 86, 148))),
                     Text(
                       dataProvider.linkProfile,
                       style: const TextStyle(
-                        color: Color.fromARGB(255, 19, 107, 180),
+                        color: Color.fromARGB(255, 9, 86, 148),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -285,13 +286,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin, Auto
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                         child: Column(
-                          children: const [
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
                             Text(
                               'Professional dashboard',
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                             Text(
-                              'New tools are now available.',
+                              dataProvider.textProfile,
                               style: TextStyle(fontSize: 12, color: Colors.grey),
                             ),
                           ],
@@ -358,6 +360,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin, Auto
               //! Tab Bar
 
               TabBar(
+                indicatorColor: Colors.black87,
                 controller: _tabController,
                 onTap: (index) {
                   setState(() {

@@ -13,26 +13,50 @@ class UserView extends StatefulWidget {
 }
 
 class _UserViewState extends State<UserView> {
-  late List<String> images;
   List<List<dynamic>> myList = [];
+  bool _isLoading = true;
+
   @override
   void initState() {
-    final List<String> images1 = List.generate(99, (index) => 'https://randomuser.me/api/portraits/${RandomImage.gender[Random().nextInt(2)]}/$index.jpg');
-    final List<String> images2 = List.generate(99, (index) => 'https://picsum.photos/id/${Random().nextInt(1080)}/1080/1080');
-    images = [...images1, ...images2];
-    images.shuffle(Random());
     super.initState();
+    Future.delayed(const Duration(milliseconds: 200), () {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    });
     MyClass().readCSV().then((data) {
       setState(() {
         myList = data;
         myList.shuffle(Random());
-        print('=========>>>>>  ${data.length}');
       });
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final List<String> images1 = List.generate(60, (index) => 'https://randomuser.me/api/portraits/${RandomImage.gender[Random().nextInt(2)]}/$index.jpg');
+    final List<String> images2 = List.generate(369, (index) => 'https://picsum.photos/id/${Random().nextInt(1080)}/200/200');
+    final List<String> images = [...images1, ...images2];
+    images.shuffle(Random());
+    //! Loading
+    if (_isLoading) {
+      return Container(
+        color: Colors.white,
+        child: Center(
+          child: SizedBox(
+            width: 50,
+            height: 50,
+            child: CircularProgressIndicator(
+              backgroundColor: Colors.grey.shade300,
+              color: Colors.grey[500],
+              strokeWidth: 1,
+            ),
+          ),
+        ),
+      );
+    }
     return Container(
       color: Colors.white,
       child: ListView.builder(
@@ -99,19 +123,21 @@ class _UserViewState extends State<UserView> {
               children: [
                 Row(
                   children: [
-                    // Padding(
-                    //   padding: const EdgeInsets.only(right: 16),
-                    //   child: Container(width: 50, height: 50, color: Colors.amber),
-                    // ),
                     Padding(
                       padding: const EdgeInsets.only(right: 16),
                       child: CachedNetworkImage(
-                        // imageUrl: 'https://randomuser.me/api/portraits/${RandomImage.gender[Random().nextInt(2)]}/${Random().nextInt(100)}.jpg',
-                        imageUrl: 'https://randomuser.me/api/portraits/${RandomImage.gender[Random().nextInt(2)]}/${Random().nextInt(100)}.jpg',
+                        imageUrl: myList[index][2],
                         errorWidget: (context, url, error) {
                           return Container(
                             width: 50,
                             height: 50,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              image: DecorationImage(
+                                fit: BoxFit.cover,
+                                image: NetworkImage(images[index]),
+                              ),
+                            ),
                           );
                         },
                         placeholder: (context, url) {
@@ -141,7 +167,6 @@ class _UserViewState extends State<UserView> {
                       children: [
                         Text(
                           myList[index][0].toString(),
-                          // RandomUserName.usernames[Random().nextInt(90)],
                           style: const TextStyle(
                             fontSize: 15.0,
                           ),
@@ -149,8 +174,7 @@ class _UserViewState extends State<UserView> {
                         SizedBox(
                           width: 205,
                           child: Text(
-                            myList[index][1],
-                            // RandomUserName.names[Random().nextInt(90)],
+                            myList[index][1].toString(),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
@@ -184,9 +208,4 @@ class _UserViewState extends State<UserView> {
 
 class RandomImage {
   static const List<String> gender = ['men', 'women'];
-}
-
-class RandomUserName {
-  static const List<String> usernames = ["bluesky", "jazzman", "sunsetlover", "greeneyes", "rockstar", "beachbum", "happycamper", "pizzalover", "coffeeaddict", "bookworm", "gardener", "fitnessfan", "doglover", "catperson", "artist", "writer", "baker", "cheflife", "yogagirl", "surfergirl", "skaterboy", "snowboarder", "partyanimal", "sunflower", "butterfly", "dragonfly", "firefly", "thunderstorm", "rainydays", "sunnydayz", "moonchild", "stargazer", "nightowl", "earlybird", "citylights", "countrygirl", "islandlife", "mountaingirl", "roadtripper", "travelbug", "wanderlust", "adventureseeker", "freedomfighter", "changemaker", "activist", "feminist", "goddess", "warrior", "queenbee", "kingoftheworld", "bossbabe", "entrepreneur", "startuplife", "techie", "nerdalert", "geekgirl", "gamergirl", "booknerd", "movielover", "musicaddict", "popculture", "hipster", "trendsetter", "fashionista", "makeupjunkie", "beautyqueen", "fitnessmodel", "healthyliving", "organicfoodie", "plantbased", "veganlife", "spiritualgangster", "meditation", "mindfulness", "positivevibes", "goodenergy", "kindnessmatters", "gratitudeattitude", "lovelanguages", "relationshipgoals", "familytime", "momlife", "dadsofinstagram", "petsofinstagram", "friendsforever", "bffs", "squadgoals", "teamwork", "nevergiveup", "believeinyourself", "dreambig", "hustlehard", "workinprogress"];
-  static const List<String> names = ["Oliver", "Emma", "Liam", "Ava", "Noah", "Sophia", "Ethan", "Isabella", "Lucas", "Mia", "Mason", "Charlotte", "Jacob", "Amelia", "Michael", "Harper", "Benjamin", "Evelyn", "William", "Abigail", "Daniel", "Emily", "Matthew", "Elizabeth", "Joseph", "Sofia", "David", "Madison", "Aiden", "Chloe", "James", "Ella", "Elijah", "Grace", "Samuel", "Victoria", "Alexander", "Scarlett", "Isaac", "Avery", "Joshua", "Lily", "Connor", "Hannah", "Eli", "Natalie", "Levi", "Addison", "Nathan", "Aria", "Caleb", "Zoe", "Hunter", "Penelope", "Christian", "Riley", "Grayson", "Savannah", "Sebastian", "Audrey", "Gabriel", "Ellie", "Owen", "Violet", "Luke", "Stella", "Cameron", "Brooklyn", "Landon", "Claire", "Adrian", "Aaliyah", "Logan", "Skylar", "Evelyn", "Bella", "Lincoln", "Lucy", "Nicholas", "Paisley", "Jaxon", "Mila", "Asher", "Genesis", "Hudson", "Naomi", "Jeremiah", "Aurora", "Mateo", "Liliana", "Easton", "Melanie", "Ryan", "Valentina", "Nolan", "Delilah", "Colton", "Isabelle"];
 }

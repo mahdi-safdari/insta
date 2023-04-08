@@ -2,13 +2,9 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:instagram/my_data.dart';
-import 'package:instagram/providers/data_provider.dart';
-import 'package:instagram/providers/slider_provider.dart';
 import 'package:instagram/providers/story_data_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 class OverView extends StatefulWidget {
@@ -20,39 +16,11 @@ class OverView extends StatefulWidget {
 }
 
 class _OverViewState extends State<OverView> {
-  getData() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      MyData.userName = prefs.getString('userName') ?? 'userName';
-      MyData.profileName = prefs.getString('profileName') ?? 'profileName';
-      MyData.numberPost = prefs.getString('numberPost') ?? '99';
-      MyData.profileFollower = prefs.getString('profileFollower') ?? '999';
-      MyData.profileFollowing = prefs.getString('profileFollowing') ?? '9K';
-      MyData.bio = prefs.getString('bio') ?? 'Bio';
-      MyData.view = prefs.getString('view') ?? '9K';
-      MyData.reach = prefs.getString('reach') ?? '200';
-      MyData.engaged = prefs.getString('engaged') ?? '--';
-      MyData.profileActivity = prefs.getString('profileActivity') ?? '0';
-      MyData.impression = prefs.getString('impression') ?? '9';
-      MyData.intraction = prefs.getString('intraction') ?? '19';
-      MyData.shares = prefs.getString('shares') ?? '36';
-      MyData.replies = prefs.getString('replies') ?? '20';
-      MyData.navigation = prefs.getString('navigation') ?? '100';
-      MyData.forward = prefs.getString('forward') ?? '360';
-      MyData.exited = prefs.getString('exited') ?? '6';
-      MyData.nextStory = prefs.getString('nextStory') ?? '33';
-      MyData.back = prefs.getString('back') ?? '2';
-      MyData.profileVisit = prefs.getString('profileVisit') ?? '19';
-      MyData.follows = prefs.getString('profileActivity') ?? '39';
-    });
-  }
-
   late List<_ChartData> data;
   late TooltipBehavior _tooltip;
   bool _isLoading = true;
   @override
   void initState() {
-    getData();
     super.initState();
     Future.delayed(const Duration(seconds: 1), () {
       if (mounted) {
@@ -71,17 +39,15 @@ class _OverViewState extends State<OverView> {
 
   @override
   Widget build(BuildContext context) {
-    final slider = Provider.of<SliderProvider>(context);
-    final dataProvider = Provider.of<DataProvider>(context);
     final dataStory = Provider.of<StoryDataProvider>(context);
-    var n = slider.follower - slider.nonFollower;
+    var n = dataStory.followerChart[widget.dataIndex] - dataStory.nonFollowerChart[widget.dataIndex];
     var space = n / pi * 0.08;
 
     data = [
       _ChartData('A', space.toDouble()),
-      _ChartData('Steve', slider.nonFollower.toDouble()),
+      _ChartData('Steve', dataStory.nonFollowerChart[widget.dataIndex].toDouble()),
       _ChartData('B', space.toDouble()),
-      _ChartData('David', slider.follower.toDouble()),
+      _ChartData('David', dataStory.followerChart[widget.dataIndex].toDouble()),
     ];
     _tooltip = TooltipBehavior(enable: true);
     final formatter = NumberFormat('#,###');
@@ -133,7 +99,7 @@ class _OverViewState extends State<OverView> {
                   const SizedBox(height: 25),
                   TextAndNumber(text: 'Accounts engaged', number: formatter.format(dataStory.engaged[widget.dataIndex])),
                   const SizedBox(height: 25),
-                  TextAndNumber(text: 'Profile activity', number: formatter.format(dataStory.profileVisit[widget.dataIndex] + dataStory.follows[widget.dataIndex])),
+                  TextAndNumber(text: 'Profile activity', number: formatter.format(dataStory.activity[widget.dataIndex])),
                   const SizedBox(height: 30),
                 ],
               ),
@@ -367,7 +333,7 @@ class _OverViewState extends State<OverView> {
                       Padding(
                         padding: const EdgeInsets.only(right: 16),
                         child: Text(
-                          formatter.format(dataStory.share[widget.dataIndex] + dataStory.replies[widget.dataIndex]),
+                          formatter.format(dataStory.intraction[widget.dataIndex]),
                           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                         ),
                       ),
@@ -491,7 +457,7 @@ class _OverViewState extends State<OverView> {
                       Padding(
                         padding: const EdgeInsets.only(right: 16),
                         child: Text(
-                          formatter.format(dataStory.forward[widget.dataIndex] + dataStory.exited[widget.dataIndex] + dataStory.nextStory[widget.dataIndex] + dataStory.back[widget.dataIndex]),
+                          formatter.format(dataStory.navigation[widget.dataIndex]),
                           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                         ),
                       ),
@@ -551,7 +517,7 @@ class _OverViewState extends State<OverView> {
                       Padding(
                         padding: const EdgeInsets.only(right: 15),
                         child: Text(
-                          formatter.format(dataStory.profileVisit[widget.dataIndex] + dataStory.follows[widget.dataIndex]),
+                          formatter.format(dataStory.activity[widget.dataIndex]),
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 20,

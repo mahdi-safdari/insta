@@ -13,9 +13,9 @@ class AccountTab3 extends StatelessWidget {
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3),
       itemBuilder: (BuildContext context, int index) {
         return Padding(
-          padding: const EdgeInsets.all(2.0),
+          padding: const EdgeInsets.all(1.5),
           child: Container(
-            color: Colors.deepPurple[100],
+            color: Colors.grey.shade200,
           ),
         );
       },
