@@ -732,8 +732,9 @@ class _GetDataState extends State<GetData> {
                                       hintText: 'navigation',
                                       onChanged: (String text) {
                                         setState(() {
-                                          MyData.navigation = text;
-                                          saveData(key: 'navigation', value: text);
+                                          if (text.isNotEmpty) {
+                                            data.saveNavigation(value: int.parse(text), index: index);
+                                          }
                                         });
                                       },
                                     ),
